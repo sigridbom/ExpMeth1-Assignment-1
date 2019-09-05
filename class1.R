@@ -53,7 +53,7 @@ df <- data.frame(vector,siblings,gender)
 df <- rbind(df,c("Sigrid",1,"f"))
 df[-7,8]
 df <- df[-c(7,8),]
-df <- rbind(df,c("Sigrid",1,"f"))
-df$vector <- as.character(df$vector)
-df <- rbind(df,c("Sigrid",1,"f"))
-df <- df[-7,]
+df <- rbind(df,c("Sigrid",1,"f")) #problem: vector var ikke defineret som karakter,
+df$vector <- as.character(df$vector) #how to define a character 
+df <- rbind(df,c("Sigrid",1,"f")) #how to add a row
+df <- df[-7,] #how to delete a row, notice the , because it's two-dimensional
