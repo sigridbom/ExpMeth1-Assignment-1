@@ -44,16 +44,24 @@ data.frame(name=vector,sibling=siblings,gender=gender)
 mean(siblings)
 df <- data.frame(name=vector,siblings=siblings,gender=gender)
 View(df)
-df <- rbind(df,c("Sigrid",1,"f")d
-          df
-          
+
+#ADDING A NEW CHARACTER TO THE DATA FRAME USE RBIND
 df <- rbind(df,c("Sigrid",1,"f"))
 df <- c(df,"Sigrid")
 df <- data.frame(vector,siblings,gender)
 df <- rbind(df,c("Sigrid",1,"f"))
 df[-7,8]
 df <- df[-c(7,8),]
-df <- rbind(df,c("Sigrid",1,"f")) #problem: vector var ikke defineret som karakter,
+df <- rbind(df,c("Sigrid",1,"f")) #problem: vector var ikke defineret som karakter, tjek environment!!
 df$vector <- as.character(df$vector) #how to define a character 
 df <- rbind(df,c("Sigrid",1,"f")) #how to add a row
 df <- df[-7,] #how to delete a row, notice the , because it's two-dimensional
+
+vestervang <- c("Niels","Asger","Sigrid")
+vestervang
+vestervangAges <- c(21,22,23)
+yr <- data.frame(vestervang,vestervangAges)
+yr <- data.frame(beboer=vestervang,alder=vestervangAges)
+yr
+sum(vestervangAges)
+mean(vestervangAges)
