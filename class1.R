@@ -30,6 +30,9 @@ siblings[c(1,2)] #how to find the sum of the first and second number of siblings
 #You have to put it in brackets, otherwise R thinks it is rows and collumns, 
 #when you use brackets, it understands that is only one dimension
 sum(siblings[c(1,2)])
+
+
+EXERCISE 2
 #creating a data frame
 data.frame(vector,siblings)
 #making a new variable
@@ -63,5 +66,34 @@ vestervangAges <- c(21,22,23)
 yr <- data.frame(vestervang,vestervangAges)
 yr <- data.frame(beboer=vestervang,alder=vestervangAges)
 yr
-sum(vestervangAges)
-mean(vestervangAges)
+yr <- rbind(yr,c("Kasper",21))
+yr$beboer <- as.character(yr$beboer)
+yr <- yr[-4,]
+#how to add a column
+yr <- rbind(yr,siblings=c(1,3,2,5))
+yr <- yr[-siblings]
+yr <- data.frame(beober=vestervang,alder=vestervangAges)
+yr$siblings <- c(3,4,1)
+yr$sulten <- c("ja","nej","JA")
+yr$actual <- c(8,2,7)
+vestervang_sib <- c(3,4,1)
+yr <- data.frame(beboer=vestervang,alder=vestervangAges,siblings=vestervang_sib,aktuel=vestervang_act,sib_dif)
+vestervang_act <- c(8,2,7)
+yr$sib_dif <- c("vestervang_sib"-"vestervang_act")
+sib_dif <- vestervang_sib - vestervang_act
+yr
+
+EXERCISE 3
+three_siblings <- siblings==3 #finding out who has 3 siblings from the df by making a new variable 
+three_siblings <- df[c(4),1] #we have seen that number four (Kasper) is "true"
+#to make that name pop up you find the fourth name, that is in the first column df[c(4),1]
+#how to find the people with more than two siblings
+morethantwo <- siblings>2
+morethantwo <- df[c(4,6),1]
+#you see your results in the environment under the variable morethantwo
+
+?mean()
+?round
+?lenght
+?unique
+unique(df$three_siblings)
