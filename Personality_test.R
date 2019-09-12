@@ -52,6 +52,26 @@ all_above <- filter(balance, shoesize >= 39 & breath_hold > mean(breath_hold) & 
 #det første der står i parentesen er "balance" fordi vi nu kigger i "balance" data framen, so I am looking for the following columns in 
 #the data frame balance - shoesize but larger or equals 39, the breathold column but only a specific interval and so on.
 
+##### How to arrange in order
+#alphabetical
+
+arrange(df, name)
+
+#reorder it by colum number
+
+arrange(df,desc(name))
+
+RankingTable <- arrange(df,desc(shoesize),desc(balloon_balance))
 
 
-all_above2 <- filter(balance, )
+####Exercise 2
+#slowest tonguetwister if you want the largest number at the top use desc ()
+#if you want the lowest number do the function without desc()
+slowest_tongue <- arrange(df,desc(tongue_twist))
+
+#student who performed best in the romberg task
+best_romberg <- arrange(df,desc(romberg_closed))
+
+#how could you improve - by comparing both, first by romberg_closed (the same with these numbers though..)
+new_best_romberg <- arrange(df, desc(romberg_closed), desc(romberg_open))
+
