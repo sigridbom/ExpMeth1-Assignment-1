@@ -31,10 +31,20 @@ siblings[c(1,2)] #how to find the sum of the first and second number of siblings
 #when you use brackets, it understands that is only one dimension
 sum(siblings[c(1,2)])
 
+#other ways of adding person 1 and person 2s number of siblings?
+sum(siblings[1],siblings[2]) #or
+siblings[1]+siblings[2]
+
+#changing class
+siblings <- as.numeric(siblings)
+class(siblings) #how to check the class
 
 EXERCISE 2
 #creating a data frame
 data.frame(vector,siblings)
+#if you want to give the differnte columns names
+data.frame(vector=peeps, siblings=siblings)
+
 #making a new variable
 gender <- c("f","f","m","m","m")
 #adding the new variable to the data frame
@@ -47,6 +57,7 @@ data.frame(name=vector,sibling=siblings,gender=gender)
 mean(siblings)
 df <- data.frame(name=vector,siblings=siblings,gender=gender)
 View(df)
+
 
 #ADDING A NEW CHARACTER TO THE DATA FRAME USE RBIND
 df <- rbind(df,c("Sigrid",1,"f"))
