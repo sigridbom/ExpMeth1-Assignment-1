@@ -104,7 +104,7 @@ select(df, name, name, name)
 #2. Make a vector
 vars = c(df$name, df$shoesize, df$touch_floor)
 #what happens when you use this vector to select from the data frame?
-select(vars)
+select(vars) #doesn't work
 vars
 #the select function doesn't work with the vector. and if I just type the vector it gives me that data as weird 
 #numbers that don't seem to be in order.... 
@@ -112,4 +112,28 @@ vars
 #3 Rearrange your dataframe with gender and shoesize first (use everything())
 
 select(df,gender,shoesize,everything())
+
+#mutate()
+
+mutate(df, cealing = (romberg_closed == 120))
+mutate(df, cealing = (romberg_closed == 120 & romberg_open == 120))
+
+#EXERCISE 4!!!!!
+#1. Calculation of how many words each student said pr. sec in the tonguetwister (99 words in total) in a new column
+
+mutate(df, words_per_sec = (99/tongue_twist))
+
+#2. Currently breath_hold is in seconds. Convert it to two new columns called ”breath_min” and ”breath_sec”, 
+#containing the number of whole minutes (achieved by dividing using %/%) and remaining seconds respectively.
+
+mutate(df, breath_min = (breath_hold %/% 60), breath_sec = (breath_hold %% 60))
+
+# % / % function = says how many times you can divide x by y as a whole number, example 7 %/% 3 = 2
+# %% function = tells us the remaning numbers by whole-number-division, example 7%%3 = 1
+
+#3. Create a new column where you calculate how far each student is from the average words pr sec
+
+mutate(df, average_words_per_sec = ((99/tongue_twist) - mean(99/tongue_twist)))
+
+mean(99/df$tongue_twist)
 
