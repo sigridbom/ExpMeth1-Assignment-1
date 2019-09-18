@@ -75,3 +75,41 @@ best_romberg <- arrange(df,desc(romberg_closed))
 #how could you improve - by comparing both, first by romberg_closed (the same with these numbers though..)
 new_best_romberg <- arrange(df, desc(romberg_closed), desc(romberg_open))
 
+new_best_romberg <- rowSums(df, df$romberg_closed > mean(df$romberg_closed) & df$romberg_open > mean(df$romberg_open)
+                            
+class(df$romberg_closed)
+class(df$romberg_open)
+df$romberg_closed <- as.numeric(df$romberg_closed)
+df$romberg_open <- as.numeric(df$romberg_open)
+
+##SELECT TESTING
+select(df, name, gender)
+#gives you the two columns you asked for in the console 
+
+select(df, name:gender)
+#gives you the columns from name to gender (which includes birthday and shoesize)
+
+select(df, -c(name:gender, vis_duck:taste_blind))
+#gives you everything between the intervals of the mentioned columns (notice the minus)
+
+select(df, gender, everything())
+#puts gender first and everything after in the console. 
+
+####EXERCISE 3!!!!!!!!!
+
+#1. What happens if you select the same column name multiple times? 
+select(df, name, name, name)
+#nothing?
+
+#2. Make a vector
+vars = c(df$name, df$shoesize, df$touch_floor)
+#what happens when you use this vector to select from the data frame?
+select(vars)
+vars
+#the select function doesn't work with the vector. and if I just type the vector it gives me that data as weird 
+#numbers that don't seem to be in order.... 
+
+#3 Rearrange your dataframe with gender and shoesize first (use everything())
+
+select(df,gender,shoesize,everything())
+
