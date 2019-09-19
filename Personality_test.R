@@ -159,4 +159,19 @@ summarise(by_gender, mean(shoesize))
 
 %>% reads ‘send the resulting dataframe(s) to the following function’.
 Shortcut cmd+shift+M (MacOS) 
+#1 Is there a gender difference when it comes to balloon balancing?
 
+df %>% group_by(gender) %>% summarise(mean(balloon_balance))
+
+#2 Is there a relation between sound level preference and which cola was chosen?
+
+df %>% group_by(taste_cola) %>% summarise(mean(sound_level_pref))
+
+#3 Does handedness influence tongue twisting speed?
+
+df %>% group_by(handedness) %>% summarise(mean(tongue_twist))
+
+#3a Can you add a column to the summary which contains number of people in each group 
+(e.g. number of right handed people), hint: look at the n() function
+
+#3b Does this tell us anything about the estimates?
