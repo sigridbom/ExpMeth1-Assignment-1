@@ -21,7 +21,7 @@ male_lefthanded <- filter(df, df$gender == "male" & df$handedness == "Left-hande
 #########EXERCISE 1
 
 #how to find the people with size 39 or bigger
-bigfoot_data <- filter(df,shoesize >= 39)
+shoes_39 <- filter(df,shoesize >= 39)
 
 #people who were able to touch the floor (yes or yes of course)
 #how to find the different possible answers
@@ -76,6 +76,12 @@ best_romberg <- arrange(df,desc(romberg_closed))
 new_best_romberg <- arrange(df, desc(romberg_closed), desc(romberg_open))
 
 new_best_romberg <- rowSums(df, df$romberg_closed > mean(df$romberg_closed) & df$romberg_open > mean(df$romberg_open)
+romberg_total <- rowSums(df[c("romberg_closed","romberg_open")])
+romberg_winner <- data.frame(df["name"],romberg_total)
+view(romberg_winner)
+
+romberg_winner_total <- arrange(romberg_winner,desc(romberg_total))
+view(romberg_winner_total)
                             
 class(df$romberg_closed)
 class(df$romberg_open)
@@ -128,12 +134,29 @@ mutate(df, words_per_sec = (99/tongue_twist))
 
 mutate(df, breath_min = (breath_hold %/% 60), breath_sec = (breath_hold %% 60))
 
-# % / % function = says how many times you can divide x by y as a whole number, example 7 %/% 3 = 2
-# %% function = tells us the remaning numbers by whole-number-division, example 7%%3 = 1
+#   % / % function = says how many times you can divide x by y as a whole number, example 7 %/% 3 = 2
+#   % % function = tells us the remaning numbers by whole-number-division, example 7%%3 = 1
 
 #3. Create a new column where you calculate how far each student is from the average words pr sec
 
 mutate(df, average_words_per_sec = ((99/tongue_twist) - mean(99/tongue_twist)))
 
 mean(99/df$tongue_twist)
+
+### Summarize
+summarise(df,mean(shoesize))
+
+by_gender <- group_by(df, gender)
+summarise(by_gender, mean(shoesize))
+#you get a mean value for females and a mean value for men in shoesize
+#when you want to find the mean of a column you can use summarise() or mean()
+#but by grouping that column into two or more categories you get a mean for each of these categories, 
+#ex male and female mean showsize
+
+#the easier way of doing this = pipes 
+
+###EXERCISE 5
+
+%>% reads ‘send the resulting dataframe(s) to the following function’.
+Shortcut cmd+shift+M (MacOS) 
 
