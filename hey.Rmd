@@ -1,0 +1,58 @@
+---
+title: "My first markdown"
+author: "Sigrid"
+date: "9/19/2019"
+output: html_document
+---
+## How to make a header
+this is just text, R will not read it as code.
+command + alt + i for creating a chunk (where you can code)
+
+```{r setup}
+library(tidyverse)
+#Command 1 
+knitr::opts_chunk$set(echo = TRUE)
+
+#Command 2: set a new working directory to ALL chunks - not just the current chunk
+#You need to remove the # for it to work
+#knitr::opts_knit$set(root.dir = 'relative_path_to_root_from_Rmd' )
+
+#Importing 
+
+personality_test <- read_csv("NEW_CogSciPersonalityTest2019.csv")
+
+```
+
+setwd doesn't work in a r markdown fil! Save the rmd file in a folder, that you want to be the working directory. Just keep everything in your project. 
+
+##Make a new chunk with an output
+
+```{r}
+df <- data.frame(personality_test)
+#find class of balloon_balance
+class(df$balloon_balance)
+#R tells me it is numeric
+```
+
+### PART TWO
+
+### summarise() function
+This function collapses the whole dataframe into a single summary. For this function to work, it has to follow certain pattern.  First, you specify the data frame you want to summarise and then you say what values you want to have in your summary.
+
+```{r}
+library(tidyverse)
+
+#Make a summary with just one value - the average shoesize 
+summarise(df,mean(choose_rand_num))
+
+#summary with several values: the average shoesize and its standard deviation
+summarise(df,mean(shoesize),sd(shoesize))
+
+```
+
+summarise() is quite useless by itself, but everything changes when we **group** our data!
+
+### group_by() function
+group_by() takes an existing data frame and converts it into a data frame grouped by some principle. See examples in the chunk below:
+
+### group_by function
