@@ -56,3 +56,43 @@ summarise() is quite useless by itself, but everything changes when we **group**
 group_by() takes an existing data frame and converts it into a data frame grouped by some principle. See examples in the chunk below:
 
 ### group_by function
+
+##  Ggplot2
+
+```{r}
+ggplot(df)
+
+#Examples of setups with different aesthetics:
+
+
+ggplot(df, aes(x=df$gender))
+ggplot(df, aes(x=df$gender, y=df$balloon))
+ggplot(df, aes(x=breath_hold, color=gender))
+```
+
+#Geoms
+
+```{r}
+ggplot(df, aes(x = tongue_twist, fill = df$gender)) + geom_histogram(binwidth = 1)
+```
+
+#Make another histogram choose_rand_num
+#To see all colors available colors()
+
+```{r}
+
+ggplot(df, aes(x = df$choose_rand_num, fill = df$gender)) + geom_histogram(binwidth = 30, fill=c("turquoise4","goldenrod2"))
+
+```
+
+###geom_errorbar
+
+```{r}
+
+ggplot(df, aes(x=gender, y=balloon, fill = gender))+
+  geom_bar(stat='summary', fun.y = mean)+
+  geom_errorbar(stat = 'summary', fun.data = mean_se)
+
+```
+
+
