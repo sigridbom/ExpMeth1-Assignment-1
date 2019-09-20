@@ -81,7 +81,7 @@ ggplot(df, aes(x = tongue_twist, fill = df$gender)) + geom_histogram(binwidth = 
 
 ```{r}
 
-ggplot(df, aes(x = df$choose_rand_num, fill = df$gender)) + geom_histogram(binwidth = 30, fill=c("turquoise4","goldenrod2"))
+ggplot(df, aes(x = gender, y = df$choose_rand_num, fill = df$gender)) + geom_histogram(binwidth = 30)
 
 ```
 
@@ -90,9 +90,43 @@ ggplot(df, aes(x = df$choose_rand_num, fill = df$gender)) + geom_histogram(binwi
 ```{r}
 
 ggplot(df, aes(x=gender, y=balloon, fill = gender))+
-  geom_bar(stat='summary', fun.y = mean)+
+  geom_bar(stat='summary', fun.y = mean, fill = c("yellow2","skyblue3")) +
   geom_errorbar(stat = 'summary', fun.data = mean_se)
 
 ```
+
+### More layers and aesthetics 
+
+Explanation of each of the geoms:
+- fill = gender == fill the bars in different colors according to the values female/male = gender
+- geom_bar == how to get the data into the plot
+-- width = width of the bar (notice the dot insted of comma)
+- geom_errorbar == shows the standard error of the mean 
+- labs = the name of the values of the x- and y-axis respectively 
+- theme_minimal() == white background instead of grey 
+
+```{r}
+ggplot(df, aes(x=gender, y=balloon, fill = gender))+
+  geom_bar(stat='summary', fun.y = mean, width = 0.5)+
+  geom_errorbar(stat = 'summary', fun.data = mean_se, width = 0.2)+labs(x = "Gender", y = "Balloon time")+
+  theme_minimal()
+  
+
+```
+
+#### Visualization exercise
+1. Identically to bar plots we've made above, make a bar plot showing average shoesize according to handedness.
+
+2. Try to make it pretty!
+
+```{r}
+ggplot(df, aes(x = df$handedness, y = mean(df$shoesize), fill = df$handedness)) + labs(x = "Handedness", y = "Shoesize (mean)") + theme_minimal() + geom_bar(stat='summary', fun.y = mean, width = 0.5)
+
+
+
+#+ geom_histogram(binwidth = 10) + geom_bar(stat="count",fun.y = mean)
+```
+
+Ser ikke helt rigtigt ud... 
 
 
