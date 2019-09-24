@@ -9,6 +9,16 @@ personality_test <- read.csv("NEW_CogSciPersonalityTest2019.csv")
 
 my_graph <- ggplot(personality_test, aes(x = personality_test$gender, y = mean(personality_test$shoesize), colour = gender))
 
+ggplot(personality_test, aes(gender, shoesize))+
+  geom_bar(stat = "summary",fun.y=mean)
+
+ggplot(personality_test, aes(gender, shoesize))+geom_bar(stat = "summary", fun.y=mean)
+
+mean(personality_test$shoesize)
+
+mean(personality_test$shoesize)
+       
+       
 my_graph + opts(title = "Test")
 
 my_graph + geom_bar() 
