@@ -139,8 +139,10 @@ Hint: You can try to remove the outlier(s) (you could use filter) and make the s
 
 new_music_taste_box <- df %>% filter(hours_music_per_week<75)
 
-new_music_taste_box <- ggplot(df, aes(taste_cola, hours_music_per_week)) +
+new_graph <- ggplot(new_music_taste_box, aes(new_music_taste_box$taste_cola, new_music_taste_box$hours_music_per_week)) +
   stat_summary(fun.y = mean, geom = "point") + geom_boxplot(width = 0.5)
+
+new_graph
 
 new_music_taste_box
 
