@@ -30,6 +30,22 @@ data$mul_error <- data$error_sarah * data$error_mother
 sum(data$mul_error)
 
 #divide by degrees of freedom
-sum(data$mul_error)/(nrow(data)-1
+covariance <- sum(data$mul_error)/(nrow(data)-1)
 
 #the covariance is 0,5034244
+
+#Finding the correlation coefficient
+
+r <- covariance/(sd(data$Mother)*sd(data$Sarah))
+r
+
+#a function to give us the correlation coefficient
+cor.test(Sarah, Mother)
+
+#a function to find the covariance
+cov(Sarah, Mother)
+
+#trying to find the correlation coefficient in one line of code-ish
+(sum((Sarah - mean(Sarah))*(Mother-mean(Mother))))/(9*sd(Mother)*sd(Sarah))
+
+#not very pretty, but it works 
