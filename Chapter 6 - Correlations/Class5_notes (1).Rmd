@@ -221,7 +221,7 @@ normal_read
 
 
 2. You can try transformations:
-– Use mutate to create log(RT), sqrt(RT) and 1/RT
+– Use mutate to create log(RT), sqrt(RT) and 1/RT (recipricol)
 – Go through through the assumptions check again: did transformation fix your data or do you need to use a correlation test for non-normally distributed data?
 
 ```{r}
@@ -274,6 +274,12 @@ ggplot(dataframe,aes(x, y))+
 
 
 ```{r}
+
+scat_read <- ggplot(rdf,aes(len, rdf$Reaction_time))+
+  geom_point( )+
+  geom_smooth(method="lm")   # lm stands for linear model, so geom_smooth will draw a straight regression line
+  
+scat_read
 
 ```
 
