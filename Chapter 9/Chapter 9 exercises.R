@@ -29,3 +29,6 @@ spiderwide_data$real_adj <- spiderwide_data$real + spiderwide_data$adj
 
 #testing
 pMean2 <- mean(c(spiderwide_data$picture_adj, spiderwide_data$real_adj))
+
+# using the t-test to figure whether the difference between group means is equal to zero
+lm(formula = Anxiety ~ Group, data = spiderlong_data)
