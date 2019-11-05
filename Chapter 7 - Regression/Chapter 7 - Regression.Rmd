@@ -1,0 +1,46 @@
+---
+title: "Chapter 7 - Regression"
+author: "Sigrid"
+date: "11/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+getwd()
+```
+
+```{r library}
+pacman::p_load(car, QuantPsyc, boot, tidyverse)
+```
+
+7.4.1 Doing simple regression using R --> 7.5.3
+
+```{r pacak}
+album1 <- read.delim("Album Sales 1.dat")
+
+album1_scat <- ggplot(album1, aes(adverts, sales)) 
+album1_scat + geom_point() + geom_smooth(method = "lm") + theme_minimal()
+
+albumSales.1 <-  lm(album1$sales ~ album1$adverts)
+summary(albumSales.1)
+
+#self-test
+#t-test b_observed / SE_b
+134.14/7.537 
+= 17,79
+
+#not the same as this though..
+t.test(album1$sales, album1$adverts)
+
+#self-test 2, the lastest album by Abgott
+#albumsales = b_0 + b_1 x advertising budget
+134.14+(0.096*666)
+#answer 198.076 i.e. 198.076.000 ablums the first week!
+
+```
+
+```{r}
+
+```
+
