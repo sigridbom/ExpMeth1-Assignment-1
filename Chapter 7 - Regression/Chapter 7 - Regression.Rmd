@@ -16,12 +16,13 @@ pacman::p_load(car, QuantPsyc, boot, tidyverse)
 
 7.4.1 Doing simple regression using R --> 7.5.3
 
-```{r pacak}
+```{r SELF TEST 1+2}
 album1 <- read.delim("Album Sales 1.dat")
 
 album1_scat <- ggplot(album1, aes(adverts, sales)) 
 album1_scat + geom_point() + geom_smooth(method = "lm") + theme_minimal()
 
+#summary(lm(outcome ~ predictor, data = mydata))
 albumSales.1 <-  lm(album1$sales ~ album1$adverts)
 summary(albumSales.1)
 
@@ -87,4 +88,60 @@ if we want the change between two models (the anova function)
 F = (N-k_2 - 1)R^2_change / k_change(1-R^2_2)
 
 where k_2 is the change in the number of predictors, R^2_change is the change between R^2 in the old model vs the new model and R^2_2 is R^2 in the new model. 
+
+#7.9.3 Assessing the assumption of independence
+
+```{r}
+dwt(albumSales.3)
+
+vif(albumSales.3)
+1/vif(albumSales.3)
+```
+
+#Plots
+
+```{r}
+plot(albumSales.3)
+hist(rstudent(albumSales.3))
+```
+
+#Smart Alex's Tasks 1
+
+```{r Smart Alex's Task 1}
+#simple regression - predict mortality from number of pubs
+
+pubdata <- read.delim("pubs.dat")
+
+pub_scat <- ggplot(pubdata, aes(pubs, mortality))
+pub_scat + geom_point() + geom_smooth(method = "lm")
+
+pubdata_predict <- lm(mortality ~ pubs, data = pubdata)
+summary(pubdata_predict)
+
+```
+
+```{r Smart Alex's Task 2}
+
+supermodeldata <- read.delim("Supermodel.dat")
+
+#multiple regression
+sup_re <- lm(salary ~ age + years + beauty, data = supermodeldata)
+summary(sup_re)
+
+#which variables predict the salaries of the models? how valid is the regression? 
+
+lm.beta(sup_re)
+
+confint(sup_re)
+```
+R^2 is 0,184 = 18,4 percent of the variance is explained by the model... 
+age (b = 6,23) as the age increases by unit (probably one year), the salary increases by 6,23
+years (b = -5,56) when the experience increases one unit the salary decreases by -5,56
+beauty (b = -0,20) when the beauty of the model increases one percent the salary decreases by -0,2.
+if the other predictors are held constant!!
+
+
+```{r}
+
+```
 
