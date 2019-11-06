@@ -40,7 +40,51 @@ t.test(album1$sales, album1$adverts)
 
 ```
 
+7.8.2.2. Multiple regression using R
+
 ```{r}
 
+album2 <- read.delim("Album Sales 2.dat")
+
+albumSales.2 <- lm(sales ~ adverts, data = album2)
+
+albumSales.3 <- lm(sales ~ adverts + airplay + attract, data = album2)
+#update() function adds new predictors to an already existing regression function
+# albumsales.3 <- update(albumSales.2, .~. + airplay + attract)
+
+summary(albumSales.2)
+summary(albumSales.3)
+
+#standardized versions of the b-values
+lm.beta(albumSales.3)
+
+#measured in standard deviaton units, so comparable across models 
+
+#getting the confidence intervals
+confint(albumSales.3)
+
 ```
+
+7.8.4.2. Comparing models
+
+```{r}
+anova(albumSales.2, albumSales.3)
+
+```
+
+Here the Pr(>F) is 2,2e-16 (a very small number indeed), we can therefore say:
+The albumSales.3 significantly improved the fit of the model to the data compared to albumSales.2, F(2, 196) = 96,44, p < .001.
+
+We are here looking at the change in R^2 from one model to the other model. 
+
+by hand it would look like this:
+
+F = (N-k-1)R^2 / k(1-R^2)
+where N is the total amount of samples, k is the number of predictors and R^2 is the amount of variance explained by the model in decimal numbers. 
+
+if we want the change between two models (the anova function)
+
+F = (N-k_2 - 1)R^2_change / k_change(1-R^2_2)
+
+where k_2 is the change in the number of predictors, R^2_change is the change between R^2 in the old model vs the new model and R^2_2 is R^2 in the new model. 
 
