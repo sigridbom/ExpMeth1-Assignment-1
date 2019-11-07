@@ -1,0 +1,82 @@
+---
+title: "Portfolio 3 - The Reading Experiment"
+author: "Sigrid"
+date: "11/7/2019"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(tidyverse, pastecs, WRS2, stringr)
+
+mrc_data <- read_csv("MRC_database.csv")
+
+
+#temp = list.files(path = "/logfiles", pattern="*.csv")
+#myfiles <-  lapply(temp, read_csv)
+
+#myfiles <- read_csv(temp)
+
+data1 <- read_csv("/logfiles/*.csv")
+
+files <- list.files(path = "logfiles",     #PUT THE NAME OF YOUR FOLDER WITH DATA in the quotes, it also might need '/' in the end, experiment with it :)
+                    pattern = ".csv",  #everything that contains '.csv' in its name will be listed
+                    full.names = T)    #makes it include directory path, so instead of 'logfile_1.csv' it will be 
+
+data <- lapply(files, read_csv) %>% plyr::rbind.fill()
+
+#fixing gender with both upper and lower case
+data$Gender <- tolower(data$Gender)
+
+data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
+
+#filtering the dataframe
+
+data_out <- filter(data, data$z <=3 | data$z <=-3)
+
+```
+
+#Part 1 - Which properties of words correlate with word-by-word reading times?
+
+First I will investigate whether the data are normally distributed or not. If it is normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests. 
+
+1) tjek om data er normal
+2) lav parametric eller non-parametric test ift udfaldet
+Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
+Covariance
+
+
+```{r}
+#WORD LENGHT
+
+#creating a column with word lenght
+
+data_out$word_lenght <- len(data$Stimulus)
+
+data_out <- data_out %>% mutate(word_clean = str_replace_all(data_out$Stimulus,"[:punct:]", ""))
+
+data_out$word_len <- nchar(data_out$word_clean)
+
+
+
+```
+
+correalation test
+
+```{r}
+
+spearman 
+
+cor.test(data_out$word_len, data_out$Reaction_time, method = "spearman")
+
+
+
+```
+```{r word frequencies}
+
+toupper(data_out$word_clean)
+
+
+
+```
+
