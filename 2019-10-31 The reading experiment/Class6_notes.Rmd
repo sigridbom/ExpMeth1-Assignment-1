@@ -78,7 +78,9 @@ data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
 
 #filtering the dataframe
 
-data_out <- data %>% filter(data$z <= 3 | data$z <= -3)
+d#ata_out <- data %>% filter(data$z <= 3 | data$z >= -3)
+
+data_out <- filter(data, data$z <=3 | data$z <=-3)
 
 #t-testing the two different dataframes 
 t.test(Reaction_time ~ Gender, data = data)
@@ -99,6 +101,7 @@ t.test(Reaction_time ~ Version, data = data_out)
 #change 'var.equal' argument to True to perform a student's t-test, rather than the default Welch's
 
 t.test(Reaction_time ~ Version, data = data_out, var.equal = T)
+t.test(Reaction_time~ Gender, data=data_out, var.equal = T)
 
 ```
 
@@ -110,6 +113,8 @@ More information can be found: http://www.sthda.com/english/wiki/paired-samples-
 #set 'paired' argument to True to perform a paired (dependent) t-test (might not work due to our experimental design)
 
 t.test(Reaction_time ~ Version, data = data_out, paired = T)
+t.test(Reaction_time ~ Gender, data = data_out, paired = T)
+
 #doesn't work 
 
 ```
@@ -120,6 +125,7 @@ mu is a number indicating the true value of the mean. One-sample t-test is used 
 More information: http://www.sthda.com/english/wiki/one-sample-t-test-in-r
 ```{r}
 t.test(data$Reaction_Time, mu = 0.5)  #a one sample t-test: is mean of our sample different from the theoretical mean of 0.5
+
 
 #Try to change mu values and see if/how output changes
 
@@ -154,12 +160,58 @@ Note that you need to check assumptions for reading time data in condition 1 and
 
 ```{r}
 
+hist(data_out$Reaction_time)
+
+data_out_stream <- data_out %>% filter(Version == "stream.")
+data_out_building <- data_out %>% filter(Version == "building.")
+
+round(pastecs::stat.desc((data_out_stream$Reaction_time), norm = T, basic = F), digits = 2)
+round(pastecs::stat.desc((data_out_building$Reaction_time), norm = T, basic = F), digits = 2)
+
+
+qqnorm(data_out_stream$Reaction_time)
+qqnorm(data_out_builing$Reaction_time)
+      
+
 ```
 
 
 3.2 Transformation of data (if needed)
 First, remove obvious outliers in the data. Then try to apply a transformation to the data to make them normally distributed. It's a common practice to log-transform reaction time data, does it work for you?
+
+From the Class4_notes --> ### Part 4: Data transformation
+From Fabio's slides:
+- Positive skew or Unequal variances ->   log transformation: log(Xi)
+              Limmits: Can’t deal with negative numbers
+              R syntax: log()
+
+- Positive skew or Unequal variances -> square root transformation: √Xi
+              Limits: Bigger effect than log(), still can’t deal with negative numbers
+              R syntax: sqrt()
+
+- Positive skew - Unequal variances ->reciprocal transformation: 1/Xi
+              Limits: Good for negative numbers, but reverses scores
+              R syntax: 1/...
+
+- Negative skew -> Reverse score transformations
+              Reverse the data (Xi-max(X)) before running any of the above transformations
+
+mutate() from tidyverse is really good for transforming data:
+
 ```{r}
+
+data_log_stream <- data_out_stream %>% mutate(react_log = log(data_out_stream$Reaction_time)) %>% mutate(react_sqrt = (sqrt(data_out_stream$Reaction_time)))
+
+data_log_building <- data_out_building %>% mutate(react_log = log(data_out_building$Reaction_time)) %>% mutate(react_sqrt = (sqrt(data_out_building$Reaction_time)))
+
+round(pastecs::stat.desc((data_log_stream$react_log), basic = F, norm = T), digits = 2)
+round(pastecs::stat.desc((data_log_stream$react_sqrt), basic = F, norm = T), digits = 2)
+
+round(pastecs::stat.desc((data_log_building$react_log), basic = F, norm = T), digits = 2)
+round(pastecs::stat.desc((data_log_building$react_sqrt), basic = F, norm = T), digits = 2)
+
+hist(data_log_stream$react_log)
+hist(data_log_stream$react_sqrt)
 
 ```
 
@@ -168,6 +220,11 @@ First, remove obvious outliers in the data. Then try to apply a transformation t
 Perform a t-test to test if there is a significant difference in reading time between conditions of your experiment. If you performed previous assumptions check and data transformation on subsets of data, make sure you perform the t-test on the whole dataset that contains both conditions and potentially your transformed reaction time variable.
 ```{r}
 
+data_log <- data_out %>% mutate(log(data_out$Reaction_time))
+
+t.test(Reaction_time ~ Version, data = data_out)
+t.test(Reaction_time ~ Version, data = data_log)
+
 ```
 
 
@@ -175,6 +232,12 @@ Perform a t-test to test if there is a significant difference in reading time be
 For that, make a plot that demonstrates the mean value of reading time in two conditions with corresponding error bars. It could be for example a bar plot or box plot or violin plot with marks of the mean values (you can reuse code from Class4_notes if you want). Remember that ggplot wants your condition variable to be a factor to plot data in 2 different groups. 
 
 ```{r}
+
+plot_all <- ggplot(data_out, aes(Version, Reaction_time, coulour = Version))
+plot_all + geom_bar(stat = "summary", fun.y = mean, width = 0.5) + theme_minimal()
+
+
++ geom_errorbar(sd(mean(data_out$Reaction_time)))
 
 ```
 
