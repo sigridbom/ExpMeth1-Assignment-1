@@ -45,6 +45,13 @@ First I will investigate whether the data are normally distributed or not. If it
 Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
 Covariance
 
+#Fabio
+Word frequency - mrc database
+
+t.test
+two seperate tests
+keep it minimalistic
+
 
 ```{r}
 #WORD LENGHT
@@ -76,7 +83,12 @@ cor.test(data_out$word_len, data_out$Reaction_time, method = "spearman")
 
 toupper(data_out$word_clean)
 
+#df_merge <- merge(data_out, mrc_data, by = "word_clean")
 
+mrc_data_subset <- filter(mrc_data$kf_freq, mrc_data$word)
+
+class(mrc_data$kf_freq)
+class(mrc_data$word)
 
 ```
 
