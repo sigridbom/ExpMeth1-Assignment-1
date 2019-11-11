@@ -5,34 +5,22 @@ date: "11/7/2019"
 output: html_document
 ---
 
+First I load the relevant packages and import my data from the reading experiment and the data from the MRC database. I will use the MRC database in order to determine the frequency of the words used in the experiment according to normal English
+. 
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
-pacman::p_load(tidyverse, pastecs, WRS2, stringr)
+pacman::p_load(tidyverse, pastecs, WRS2, stringr, stringi)
 
 mrc_data <- read_csv("MRC_database.csv")
 
-
-#temp = list.files(path = "/logfiles", pattern="*.csv")
-#myfiles <-  lapply(temp, read_csv)
-
-#myfiles <- read_csv(temp)
-
-data1 <- read_csv("/logfiles/*.csv")
-
-files <- list.files(path = "logfiles",     #PUT THE NAME OF YOUR FOLDER WITH DATA in the quotes, it also might need '/' in the end, experiment with it :)
-                    pattern = ".csv",  #everything that contains '.csv' in its name will be listed
-                    full.names = T)    #makes it include directory path, so instead of 'logfile_1.csv' it will be 
-
+files <- list.files(path = "logfiles",     
+                    pattern = ".csv",  
+                    full.names = T) 
 data <- lapply(files, read_csv) %>% plyr::rbind.fill()
 
-#fixing gender with both upper and lower case
+#fixing gender with both upper and lower case due to a prior mistake in the code when conducting the experiment
 data$Gender <- tolower(data$Gender)
 
-data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
-
-#filtering the dataframe
-
-data_out <- filter(data, data$z <=3 | data$z <=-3)
 
 ```
 
@@ -40,55 +28,93 @@ data_out <- filter(data, data$z <=3 | data$z <=-3)
 
 First I will investigate whether the data are normally distributed or not. If it is normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests. 
 
-1) tjek om data er normal
-2) lav parametric eller non-parametric test ift udfaldet
-Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
-Covariance
+```{r checking assumptions}
 
-#Fabio
-Word frequency - mrc database
+reac_hist <- ggplot(data, aes(Reaction_time))
+reac_hist + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
 
-t.test
-two seperate tests
-keep it minimalistic
-
-
-```{r}
-#WORD LENGHT
-
-#creating a column with word lenght
-
-data_out$word_lenght <- len(data$Stimulus)
-
-data_out <- data_out %>% mutate(word_clean = str_replace_all(data_out$Stimulus,"[:punct:]", ""))
-
-data_out$word_len <- nchar(data_out$word_clean)
-
-
+qq_plot <- ggplot(data, aes(sample = Reaction_time)) 
+qq_plot + stat_qq() + stat_qq_line(colour = "red")
 
 ```
 
-correalation test
+The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better. I'll now try to remove outliers and see if that helps the data follow the red line. 
+
+```{r transforming the data - outliers}
+
+data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
+
+#filtering the dataframe
+
+data_out <- filter(data, data$z <=3 | data$z <=-3)
+
+#making a new histogram
+reac_hist2 <- ggplot(data_out, aes(Reaction_time))
+reac_hist2 + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
+
+#making a new qqplot
+qq_plot2 <- ggplot(data_out, aes(sample = Reaction_time)) 
+qq_plot2 + stat_qq() + stat_qq_line(colour = "red")
+```
+
+It helped, but the data are still not follwing the red line very well in both the histogram and the qq-plot. I'll new look at the numeric values for the data.
+
+```{r}
+round(pastecs::stat.desc(data$Reaction_time, basic = F, norm = TRUE), digits = 2)
+```
+
+The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
+The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. This implies that the data are significantly different than a normal distrubtion.
+
+The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
+
+I will therefore continue with non-parametric tests for correlation, i.e. Kendalls' Tau and Spearman's Rho.
+
+
+```{r word length and correlation}
+
+#removing punctuation
+data_out <- data_out %>% mutate(word_clean = str_replace_all(data_out$Stimulus,"[:punct:]", ""))
+
+#making a new column with the lenght of the word
+data_out$word_len <- nchar(data_out$word_clean)
+
+#correlation test
+cor.test(data_out$word_len, data_out$Reaction_time, method = "spearman")
+
+```
+A Spearman's Rho value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
+
+The correlation between word length and reading time is 0,07 which is close to 0. This strongly indicates that there is no correlation between the two variables. 
+
 
 ```{r}
 
 spearman 
 
-cor.test(data_out$word_len, data_out$Reaction_time, method = "spearman")
 
 
 
 ```
 ```{r word frequencies}
 
-toupper(data_out$word_clean)
+data_out$word <- toupper(data_out$word_clean)
 
-#df_merge <- merge(data_out, mrc_data, by = "word_clean")
+df_merge <- merge(data_out, mrc_data, by = "word")
 
-mrc_data_subset <- filter(mrc_data$kf_freq, mrc_data$word)
+df_merge_sub <- df_merge %>% filter(kf_freq, word)
 
 class(mrc_data$kf_freq)
 class(mrc_data$word)
 
 ```
+NOTES
+Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
+Covariance
+#Fabio
+Word frequency - mrc database
+
+t.test
+two seperate tests
+keep it minimalistic
 
