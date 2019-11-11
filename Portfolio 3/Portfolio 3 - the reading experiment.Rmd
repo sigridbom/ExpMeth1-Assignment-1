@@ -21,7 +21,6 @@ data <- lapply(files, read_csv) %>% plyr::rbind.fill()
 #fixing gender with both upper and lower case due to a prior mistake in the code when conducting the experiment
 data$Gender <- tolower(data$Gender)
 
-
 ```
 
 #Part 1 - Which properties of words correlate with word-by-word reading times?
@@ -68,46 +67,82 @@ The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. 
 
 The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
 
-I will therefore continue with non-parametric tests for correlation, i.e. Kendalls' Tau and Spearman's Rho.
+I will therefore continue with non-parametric tests for correlation, i.e. Kendalls' Tau or Spearman's Rho. I will use Kendalls' Tau because our data set is fairly small, since we have less than 30 logfiles. 
 
 
 ```{r word length and correlation}
-
+#maybe with outliers??????
 #removing punctuation
-data_out <- data_out %>% mutate(word_clean = str_replace_all(data_out$Stimulus,"[:punct:]", ""))
+data_out <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
 
 #making a new column with the lenght of the word
-data_out$word_len <- nchar(data_out$word_clean)
+data_out$word_len <- nchar(data_out$Stimulus)
 
 #correlation test
-cor.test(data_out$word_len, data_out$Reaction_time, method = "spearman")
+cor.test(data_out$word_len, data_out$Reaction_time, method = "kendall")
 
 ```
-A Spearman's Rho value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
+A Kendall's Tau value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
 
-The correlation between word length and reading time is 0,07 which is close to 0. This strongly indicates that there is no correlation between the two variables. 
-
-
-```{r}
-
-spearman 
+The correlation between word length and reading time is 0,07 which is close to 0. This strongly indicates that there is no correlation between the two variables. BUT THE P-VALUE IS SIGNIFICANT ?????????
 
 
+```{r word frequency}
 
-
-```
-```{r word frequencies}
-
-data_out$word <- toupper(data_out$word_clean)
+#with outliers??????
+data_out$word <- toupper(data_out$Stimulus)
 
 df_merge <- merge(data_out, mrc_data, by = "word")
 
-df_merge_sub <- df_merge %>% filter(kf_freq, word)
 
-class(mrc_data$kf_freq)
-class(mrc_data$word)
+cor.test(df_merge$kf_freq, df_merge$Reaction_time, method = "kendall")
+
 
 ```
+
+
+
+```{r word number}
+
+cor.test(data$X1, data$Reaction_time, method = "spearman")
+#notice no outliers -- need all words
+#eller kendall?????
+```
+#Part 2 - How do semantic-contextual expectations affect reading times?
+
+To the fun part. 
+
+```{r}
+
+data_1 <- filter(data, data$Version == "stream.")
+
+data_2 <- filter(data, data$Version == "building.")
+
+data_1_2 <- filter(data_1, data_1$X1 == "107")
+
+data_2_2 <- filter(data_2, data_2$X1 == "107")
+
+data_con_1 <- filter(data, data$X1 == c(106, 107), data$Version == "stream.")
+data_con_2 <- filter(data, data$X1 == c(106, 107), data$Version == "building.")
+
+data_106 <- filter(data, data$X1 == 106)
+data_107 <- filter(data, data$X1 == 107)
+
+```
+
+
+```{r t-test}
+
+t.test(Reaction_time ~ Version, data = data_106)
+
+t.test(Reaction_time ~ Version, data = data_107)
+
+WRS2::yuen(Reaction_time ~ Version, data = data_106)
+
+WRS2::yuen(Reaction_time ~ Version, data = data_107)
+
+```
+
 NOTES
 Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
 Covariance
@@ -115,6 +150,8 @@ Covariance
 Word frequency - mrc database
 
 t.test
-two seperate tests
+two seperate tests for each of the conditions (building and stream vs the following word from the two conditions). number something for "they"
 keep it minimalistic
+
+LÆS OM FORSKEL på kendall og spearman (ordinal variables? - see class 5 lecture slides)
 
