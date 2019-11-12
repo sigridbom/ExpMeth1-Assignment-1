@@ -5,9 +5,9 @@ date: "11/7/2019"
 output: html_document
 ---
 
-First I load the relevant packages and import my data from the reading experiment and the data from the MRC database. I will use the MRC database in order to determine the frequency of the words used in the experiment according to normal English
+First I load the relevant packages and import my data from the reading experiment and the data from the MRC database. I will use the MRC database in order to determine the frequency of the words used in the experiment according to normal English. 
 . 
-```{r setup, include=TRUE}
+```{r setup}
 knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(tidyverse, pastecs, WRS2, stringr, stringi)
 
@@ -25,55 +25,69 @@ data$Gender <- tolower(data$Gender)
 
 #Part 1 - Which properties of words correlate with word-by-word reading times?
 
-First I will investigate whether the data are normally distributed or not. If it is normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests. 
+First I will investigate whether the data are normally distributed or not. If it is normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests, i.e. Spearman's Rho or Kendall's Tau. 
 
 ```{r checking assumptions}
 
+#creating a histogram
 reac_hist <- ggplot(data, aes(Reaction_time))
 reac_hist + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
 
+#creating a qqplot
 qq_plot <- ggplot(data, aes(sample = Reaction_time)) 
 qq_plot + stat_qq() + stat_qq_line(colour = "red")
 
+#checking numeric values
+round(pastecs::stat.desc(data$Reaction_time, basic = F, norm = TRUE), digits = 2)
+
 ```
 
-The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better. I'll now try to remove outliers and see if that helps the data follow the red line. 
+The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better but it is still not good. I will now try to remove outliers and log-transform the data and see if that hmake the data look more normally distributed. ASSUMPTIONS ARE VIOLATED 
+
+The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
+The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. This implies that the data are significantly different than a normal distrubtion.
+
+The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
+I will try to transform the data by removing outliers and logging reaction time. 
+
 
 ```{r transforming the data - outliers}
 
 data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
 
 #filtering the dataframe
-
 data_out <- filter(data, data$z <=3 | data$z <=-3)
 
+#logging the data
+data_log <- data_out %>% mutate(log(data_out$Reaction_time))
+
+
 #making a new histogram
-reac_hist2 <- ggplot(data_out, aes(Reaction_time))
+reac_hist2 <- ggplot(data_log, aes(Reaction_time))
 reac_hist2 + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
 
 #making a new qqplot
-qq_plot2 <- ggplot(data_out, aes(sample = Reaction_time)) 
+qq_plot2 <- ggplot(data_log, aes(sample = Reaction_time)) 
 qq_plot2 + stat_qq() + stat_qq_line(colour = "red")
+
+#checking the numeric values
+round(pastecs::stat.desc(data_log$Reaction_time, basic = F, norm = TRUE), digits = 2)
+
+
 ```
 
-It helped, but the data are still not follwing the red line very well in both the histogram and the qq-plot. I'll new look at the numeric values for the data.
+It helped, but the data are still not follwing the red line very well in both the histogram and the qq-plot. NUMERIC DISCUSSION
+CONCLUSION
+I will therefore continue with non-parametric tests for correlation on my untransformed data. I will remove the outliers though, because they can cause irrelevant variance. 
 
-```{r}
-round(pastecs::stat.desc(data$Reaction_time, basic = F, norm = TRUE), digits = 2)
-```
+I will use Kendalls' Tau to test for correlation because our data set is fairly small (<30 logfiles).
 
-The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
-The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. This implies that the data are significantly different than a normal distrubtion.
-
-The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
-
-I will therefore continue with non-parametric tests for correlation, i.e. Kendalls' Tau or Spearman's Rho. I will use Kendalls' Tau because our data set is fairly small, since we have less than 30 logfiles. 
 
 
 ```{r word length and correlation}
-#maybe with outliers??????
+
 #removing punctuation
-data_out <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
+data <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
 
 #making a new column with the lenght of the word
 data_out$word_len <- nchar(data_out$Stimulus)
@@ -84,7 +98,9 @@ cor.test(data_out$word_len, data_out$Reaction_time, method = "kendall")
 ```
 A Kendall's Tau value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
 
-The correlation between word length and reading time is 0,07 which is close to 0. This strongly indicates that there is no correlation between the two variables. BUT THE P-VALUE IS SIGNIFICANT ?????????
+The correlation between word length and reading time is 0,05 which is close to 0. This strongly indicates that there is no correlation between the two variables. BUT THE P-VALUE IS SIGNIFICANT ?????????
+
+significant, but very small effect, so relevant or not? 
 
 
 ```{r word frequency}
@@ -96,52 +112,78 @@ df_merge <- merge(data_out, mrc_data, by = "word")
 
 
 cor.test(df_merge$kf_freq, df_merge$Reaction_time, method = "kendall")
-
-
 ```
-
+Interpretation of the data:
 
 
 ```{r word number}
+# without outliers or ???
 
-cor.test(data$X1, data$Reaction_time, method = "spearman")
-#notice no outliers -- need all words
-#eller kendall?????
+cor.test(data_out$X1, data_out$Reaction_time, method = "kendall")
+
 ```
 #Part 2 - How do semantic-contextual expectations affect reading times?
 
 To the fun part. 
 
-```{r}
+```{r checking assumptions again}
 
-data_1 <- filter(data, data$Version == "stream.")
 
-data_2 <- filter(data, data$Version == "building.")
+data_con1 <- filter(data_out, data_out$Version == "stream.")
+data_con2 <- filter(data_out, data_out$Version == "building.")
+data_con1_w2 <- filter(data_con1, data_con1$X1 == "107")
+data_con2_w2 <- filter(data_con2, data_con2$X1 == "107")
 
-data_1_2 <- filter(data_1, data_1$X1 == "107")
+round(pastecs::stat.desc(cbind(data_con1$Reaction_time, data_con2$Reaction_time, data_con1_w2$Reaction_time, data_con2_w2$Reaction_time), basic = F, norm = TRUE), digits = 2)
 
-data_2_2 <- filter(data_2, data_2$X1 == "107")
-
-data_con_1 <- filter(data, data$X1 == c(106, 107), data$Version == "stream.")
-data_con_2 <- filter(data, data$X1 == c(106, 107), data$Version == "building.")
-
-data_106 <- filter(data, data$X1 == 106)
-data_107 <- filter(data, data$X1 == 107)
 
 ```
 
 
-```{r t-test}
+```{r delete}
 
-t.test(Reaction_time ~ Version, data = data_106)
+#stat.desc on four different things?? version and word 106 or 107
 
-t.test(Reaction_time ~ Version, data = data_107)
+#data_con_1 <- filter(data, data$X1 == c(106, 107), data$Version == "stream.")
+#data_con_2 <- filter(data, data$X1 == c(106, 107), data$Version == "building.")
+
+```
+
+
+```{r t-test non-parametric}
+
+data_106 <- filter(data_out, data$X1 == 106)
+data_107 <- filter(data_out, data$X1 == 107)
 
 WRS2::yuen(Reaction_time ~ Version, data = data_106)
-
 WRS2::yuen(Reaction_time ~ Version, data = data_107)
 
 ```
+
+
+```{r t-test Welch}
+
+
+data_106_log <- data_106 %>% mutate(log(data_106$Reaction_time))
+data_107_log <- data_107 %>% mutate(log(data_107$Reaction_time))
+
+
+
+t.test(Reaction_time ~ Version, data = data_106_log)
+
+t.test(Reaction_time ~ Version, data = data_107_log)
+
+```
+
+```{r visualizing reaction time}
+
+plot5 <- ggplot(data_log, aes(Version, Reaction_time), fill = version)
+plot5 + geom_bar() 
+
+#qqplot???
+
+```
+
 
 NOTES
 Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
@@ -155,3 +197,10 @@ keep it minimalistic
 
 LÆS OM FORSKEL på kendall og spearman (ordinal variables? - see class 5 lecture slides)
 
+#QUESTIONS FOR TELMA
+
+- should I do stat.desc on my transformed data or the original data?? BOTH
+- Is it a good idea to do the t-test for non-parametric data and then transform the data and do a normal t-test to see the difference?  yes
+- does it make a difference that we have unequal sample sizes? (13 vs 15)  note in discussion 
+- Twitter setup!!
+# second part assumption checking with two words for each condition
