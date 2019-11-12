@@ -18,20 +18,20 @@ files <- list.files(path = "logfiles",
                     full.names = T) 
 data <- lapply(files, read_csv) %>% plyr::rbind.fill()
 
-#fixing gender with both upper and lower case due to a prior mistake in the code when conducting the experiment
+#fixing gender with both upper and lower case due to differences in the code in the group
 data$Gender <- tolower(data$Gender)
 
 ```
 
 #Part 1 - Which properties of words correlate with word-by-word reading times?
 
-First I will investigate whether the data are normally distributed or not. If it is normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests, i.e. Spearman's Rho or Kendall's Tau. 
+First I will investigate whether the data are normally distributed or not. If they are normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests, i.e. Spearman's Rho or Kendall's Tau. 
 
 ```{r checking assumptions}
 
 #creating a histogram
 reac_hist <- ggplot(data, aes(Reaction_time))
-reac_hist + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
+reac_hist + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_minimal()
 
 #creating a qqplot
 qq_plot <- ggplot(data, aes(sample = Reaction_time)) 
@@ -42,29 +42,26 @@ round(pastecs::stat.desc(data$Reaction_time, basic = F, norm = TRUE), digits = 2
 
 ```
 
-The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better but it is still not good. I will now try to remove outliers and log-transform the data and see if that hmake the data look more normally distributed. ASSUMPTIONS ARE VIOLATED 
-
-The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
+The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better but it is still not good. The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
 The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. This implies that the data are significantly different than a normal distrubtion.
 
 The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
-I will try to transform the data by removing outliers and logging reaction time. 
+I will now try to transform the data by removing outliers and logging reaction time. 
 
 
 ```{r transforming the data - outliers}
-
+#finding z-scores
 data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
 
-#filtering the dataframe
+#filtering the dataframe for z-scores between -3 and 3
 data_out <- filter(data, data$z <=3 | data$z <=-3)
 
 #logging the data
 data_log <- data_out %>% mutate(log(data_out$Reaction_time))
 
-
 #making a new histogram
 reac_hist2 <- ggplot(data_log, aes(Reaction_time))
-reac_hist2 + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_classic()
+reac_hist2 + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_minimal()
 
 #making a new qqplot
 qq_plot2 <- ggplot(data_log, aes(sample = Reaction_time)) 
@@ -76,14 +73,17 @@ round(pastecs::stat.desc(data_log$Reaction_time, basic = F, norm = TRUE), digits
 
 ```
 
-It helped, but the data are still not follwing the red line very well in both the histogram and the qq-plot. NUMERIC DISCUSSION
-CONCLUSION
+It helped, but the data are still not looking normally distributed. The values of skew.2SE and kurt.2SE are now 11,45 and 7,02 respectively. It looks negatively skewed, and because of the postive value of kurt.2SE possible also leptokurtic.
+
+The assumptions are violated and I conclude that the data are not normally distributed.
+
+An explanation for this could be that a normal distribution allows negative values and extends to very large and small data points, whereas the crucial value in my data set (reaction time) is measured in seconds which cannot be measured negatively. 
+
 I will therefore continue with non-parametric tests for correlation on my untransformed data. I will remove the outliers though, because they can cause irrelevant variance. 
 
 I will use Kendalls' Tau to test for correlation because our data set is fairly small (<30 logfiles).
 
-
-
+## Correlation between reaction time and word length
 ```{r word length and correlation}
 
 #removing punctuation
@@ -95,33 +95,52 @@ data_out$word_len <- nchar(data_out$Stimulus)
 #correlation test
 cor.test(data_out$word_len, data_out$Reaction_time, method = "kendall")
 
+#visualize 
+scat1 <- ggplot(data_out, aes(word_len,Reaction_time))
+scat1 + geom_point() + geom_smooth(method = lm, colour = "red")
+
 ```
 A Kendall's Tau value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
 
-The correlation between word length and reading time is 0,05 which is close to 0. This strongly indicates that there is no correlation between the two variables. BUT THE P-VALUE IS SIGNIFICANT ?????????
+The value of Kendall's Tau is 0,05 with a significant p-value<0,05. 
+Even though the results are significant the effect size is so small that the correlation is not very strong. 
 
-significant, but very small effect, so relevant or not? 
-
-
+##Correlation between reaction time and word frequency
 ```{r word frequency}
 
-#with outliers??????
 data_out$word <- toupper(data_out$Stimulus)
 
 df_merge <- merge(data_out, mrc_data, by = "word")
 
-
 cor.test(df_merge$kf_freq, df_merge$Reaction_time, method = "kendall")
+
+#visualize 
+scat2 <- ggplot(df_merge, aes(kf_freq, Reaction_time))
+scat2 + geom_point() + geom_smooth(method = lm, colour = "red")
+
 ```
-Interpretation of the data:
+The value of tau is -0,06 with a significant p-value (p<0,05).
+The results are significant, but with a very small effect size. 
 
-
+## Correlation between reaction time and word number
 ```{r word number}
-# without outliers or ???
 
 cor.test(data_out$X1, data_out$Reaction_time, method = "kendall")
 
+#visualize 
+scat3 <- ggplot(data_out, aes(X1,Reaction_time))
+scat3 + geom_point() + geom_smooth(method = lm, colour = "red")
+
 ```
+
+The value of tau is -0,1 rouned up with a significant p-value. This means that there is a small effect in the correlation between the reaction time and the order of the words in the story. 
+
+This makes sense because 
+
+Conclusion:
+
+
+
 #Part 2 - How do semantic-contextual expectations affect reading times?
 
 To the fun part. 
