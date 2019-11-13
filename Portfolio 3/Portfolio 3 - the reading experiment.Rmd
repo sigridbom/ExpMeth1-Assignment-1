@@ -26,68 +26,105 @@ data$Gender <- tolower(data$Gender)
 #Part 1 - Which properties of words correlate with word-by-word reading times?
 
 First I will investigate whether the data are normally distributed or not. If they are normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests, i.e. Spearman's Rho or Kendall's Tau. 
+I will subset the data into the two different conditions because the data set represents two different groups.  
 
 ```{r checking assumptions}
 
-#creating a histogram
-reac_hist <- ggplot(data, aes(Reaction_time))
-reac_hist + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_minimal()
+#subsetting the data into the two conditions
 
-#creating a qqplot
-qq_plot <- ggplot(data, aes(sample = Reaction_time)) 
-qq_plot + stat_qq() + stat_qq_line(colour = "red")
+con1 <- data %>% filter(data$Version == "stream.")
+con2 <- data %>% filter(data$Version == "building.")
 
-#checking numeric values
-round(pastecs::stat.desc(data$Reaction_time, basic = F, norm = TRUE), digits = 2)
+### histogram condition 1 (semantically contextual word)
+con1_hist <- ggplot(con1, aes(x = Reaction_time)) 
+con1_hist + geom_histogram(aes(y = ..density..), binwidth = 0.25) + stat_function(fun = dnorm, args = list(mean = mean(con1$Reaction_time), sd = sd(con1$Reaction_time)), colour = "blue", size = 1) +
+  theme_minimal() + labs(x = "Reaction time", y = "Density") + ggtitle("Condition 1 reading time distribution")
+
+## qq-plot for condition 1
+qq_plot_con1 <- ggplot(con1, aes(sample = Reaction_time)) 
+qq_plot_con1 + stat_qq() + stat_qq_line(colour = "blue") + ggtitle("Condition 1 reading time qq-plot")
+  
+
+### histogram condition 2 (salient word)
+con2_hist <- ggplot(con2, aes(x = Reaction_time)) 
+con2_hist + geom_histogram(aes(y = ..density..), binwidth = 0.25) + stat_function(fun = dnorm, args = list(mean = mean(con2$Reaction_time), sd = sd(con2$Reaction_time)), colour = "red", size = 1) +
+  theme_minimal() + labs(x = "Reaction time", y = "Density") + ggtitle("Condition 2 reading time distribution")
+
+## qq-plot for condition 2
+qq_plot_con2 <- ggplot(con2, aes(sample = Reaction_time)) 
+qq_plot_con2 + stat_qq() + stat_qq_line(colour = "red") + ggtitle("Condition 2 reading time qq-plot")
+  
+#checking numeric values for both conditions
+round(pastecs::stat.desc(cbind(con1$Reaction_time, con2$Reaction_time), basic = F, norm = TRUE), digits = 2)
 
 ```
 
-The histogram (where the red line shows what that would look like if it was normally distributed) is not looking normally distributed at all. The QQ-plot looks a little bit better but it is still not good. The values of skew.2SE and kurt.2SE are extremely high, 72,80 and 467,70 respectively. 
-The Shapiro-Wilk test has a value of 0,67 with a corresponding p-value of 0,00. This implies that the data are significantly different than a normal distrubtion.
+The histograms and the QQ-plots look fairly okay, but not necessesarily normally distributed. The values of skew.2SE and kurt.2SE for condition 1 are too high for a normal distribution (in this case 7,12 and 1,81 respectively). The same applies for condition 2 but with the values 9,58 (skew.2SE) and 11,19 (kurt.2SE). 
+Because both distributions have a positive value of kurt.2SE they are leptokurtic, which is not normal.
+
+The value Shapiro Wilk's test for condition 1 is 0,95 with a significant p-value (p<0,05), which means that the data is significantly different from a normal distribution. The same applies for condition 2 except the value of the test is 0,94 (p<0,05). 
 
 The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
 I will now try to transform the data by removing outliers and logging reaction time. 
 
 
-```{r transforming the data - outliers}
+```{r transforming the data - removing outliers and logging the data}
 #finding z-scores
 data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
 
 #filtering the dataframe for z-scores between -3 and 3
-data_out <- filter(data, data$z <=3 | data$z <=-3)
+data_out <- filter(data, data$z > -3 | data$z < 3)
 
-#logging the data
-data_log <- data_out %>% mutate(log(data_out$Reaction_time))
+#filtering the two subsets
+con1_out <- data_out %>% filter(data_out$Version == "stream.")
+con2_out <- data_out %>% filter(data_out$Version == "building.")
 
-#making a new histogram
-reac_hist2 <- ggplot(data_log, aes(Reaction_time))
-reac_hist2 + geom_histogram(aes(y=..density..), binwidth = 0.8) + stat_function(fun = dnorm, args = list(mean(data$Reaction_time), sd = sd(data$Reaction_time)), colour = "red", size = 1) + theme_minimal()
+#logging the data for both conditions
+con1_out_log <- con1_out %>% mutate(log(con1_out$Reaction_time))
+con2_out_log <- con2_out %>% mutate(log(con2_out$Reaction_time))
 
-#making a new qqplot
-qq_plot2 <- ggplot(data_log, aes(sample = Reaction_time)) 
-qq_plot2 + stat_qq() + stat_qq_line(colour = "red")
 
-#checking the numeric values
-round(pastecs::stat.desc(data_log$Reaction_time, basic = F, norm = TRUE), digits = 2)
+### new histogram condition 1
+con1_hist_log <- ggplot(con1_out_log, aes(x = Reaction_time)) 
+con1_hist_log + geom_histogram(aes(y = ..density..), binwidth = 0.25) + stat_function(fun = dnorm, args = list(mean = mean(con1_out_log$Reaction_time), sd = sd(con1_out_log$Reaction_time)), colour = "blue", size = 1) +
+  theme_minimal() + labs(x = "Reaction time", y = "Density") + ggtitle("Condition 1 reading time distribution transformed")
 
+## new qq-plot for condition 1
+qq_plot_con1_log <- ggplot(con1_out_log, aes(sample = Reaction_time)) 
+qq_plot_con1_log + stat_qq() + stat_qq_line(colour = "blue") + ggtitle("Condition 1 reading time qq-plot transformed")
+  
+
+### new histogram condition 2 
+con2_hist_log <- ggplot(con2_out_log, aes(x = Reaction_time)) 
+con2_hist_log + geom_histogram(aes(y = ..density..), binwidth = 0.25) + stat_function(fun = dnorm, args = list(mean = mean(con2_out_log$Reaction_time), sd = sd(con2_out_log$Reaction_time)), colour = "red", size = 1) +
+  theme_minimal() + labs(x = "Reaction time", y = "Density") + ggtitle("Condition 2 reading time distribution transformed")
+
+## new qq-plot for condition 2
+qq_plot_con2_log <- ggplot(con2_out_log, aes(sample = Reaction_time)) 
+qq_plot_con2_log + stat_qq() + stat_qq_line(colour = "red") + ggtitle("Condition 2 reading time qq-plot transformed")
+  
+#checking numeric values for both conditions again
+round(pastecs::stat.desc(cbind(con1_out_log$Reaction_time, con2_out_log$Reaction_time), basic = F, norm = TRUE), digits = 2)
 
 ```
 
-It helped, but the data are still not looking normally distributed. The values of skew.2SE and kurt.2SE are now 11,45 and 7,02 respectively. It looks negatively skewed, and because of the postive value of kurt.2SE possible also leptokurtic.
+The histograms and the qq-plots are looking a lot better, especially the condition 2 histogram. 
+The values of skew.2SE and kurt.2SE are the same for both conditions as before the transformation. The same goes for the Shapiro Wilk's test.
 
-The assumptions are violated and I conclude that the data are not normally distributed.
+I will therefore conclude that the assumptions are violated and the data are not normally distributed.
 
 An explanation for this could be that a normal distribution allows negative values and extends to very large and small data points, whereas the crucial value in my data set (reaction time) is measured in seconds which cannot be measured negatively. 
 
-I will therefore continue with non-parametric tests for correlation on my untransformed data. I will remove the outliers though, because they can cause irrelevant variance. 
+I will therefore continue with non-parametric tests for correlation on my untransformed data. 
+I will remove the outliers though, because they can cause unsystematic variance. 
 
 I will use Kendalls' Tau to test for correlation because our data set is fairly small (<30 logfiles).
 
 ## Correlation between reaction time and word length
-```{r word length and correlation}
+```{r word length and correlation - devide the data into subset with the different conditions?????}
 
 #removing punctuation
-data <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
+data_out <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
 
 #making a new column with the lenght of the word
 data_out$word_len <- nchar(data_out$Stimulus)
@@ -96,14 +133,14 @@ data_out$word_len <- nchar(data_out$Stimulus)
 cor.test(data_out$word_len, data_out$Reaction_time, method = "kendall")
 
 #visualize 
-scat1 <- ggplot(data_out, aes(word_len,Reaction_time))
-scat1 + geom_point() + geom_smooth(method = lm, colour = "red")
+scat_len <- ggplot(data_out, aes(word_len,Reaction_time))
+scat_len + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word length and reaction time")
 
 ```
 A Kendall's Tau value of 1 indicates a perfect positive correlation, where a value of -1 indicates a perfect negative correlation. A value of 0 indicates no correlation. 
 
 The value of Kendall's Tau is 0,05 with a significant p-value<0,05. 
-Even though the results are significant the effect size is so small that the correlation is not very strong. 
+Even though the results are significant the effect size is so small that the correlation is not very strong at all. 
 
 ##Correlation between reaction time and word frequency
 ```{r word frequency}
@@ -115,8 +152,8 @@ df_merge <- merge(data_out, mrc_data, by = "word")
 cor.test(df_merge$kf_freq, df_merge$Reaction_time, method = "kendall")
 
 #visualize 
-scat2 <- ggplot(df_merge, aes(kf_freq, Reaction_time))
-scat2 + geom_point() + geom_smooth(method = lm, colour = "red")
+scat_freq <- ggplot(df_merge, aes(kf_freq, Reaction_time))
+scat_freq + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word frequency and reaction time")
 
 ```
 The value of tau is -0,06 with a significant p-value (p<0,05).
@@ -128,46 +165,59 @@ The results are significant, but with a very small effect size.
 cor.test(data_out$X1, data_out$Reaction_time, method = "kendall")
 
 #visualize 
-scat3 <- ggplot(data_out, aes(X1,Reaction_time))
-scat3 + geom_point() + geom_smooth(method = lm, colour = "red")
+scat_num <- ggplot(data_out, aes(X1,Reaction_time))
+scat_num + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word number and reaction time")
 
 ```
 
 The value of tau is -0,1 rouned up with a significant p-value. This means that there is a small effect in the correlation between the reaction time and the order of the words in the story. 
 
-This makes sense because 
+This makes sense because I observed many participants going slowly in the beginning and then clicking faster and faster to get to the next word. 
 
-Conclusion:
-
+In conclusion all three word properties are significant, but is only the word number i.e. the order of words in the story that has a small effect size, where the two others are too small to actually conclude there is a meaningful correlation. 
 
 
 #Part 2 - How do semantic-contextual expectations affect reading times?
 
 To the fun part. 
 
+First I will check the assumptions again because we now have four groups of data; the two versions and within the two version the semantically contextual word or the salient word (i.e. word number 106) and the word following that (word number 107).
+
 ```{r checking assumptions again}
 
+con1_out_w1 <- filter(con1_out, con1_out$X1 == "106")
+con2_out_w1 <- filter(con2_out, con2_out$X1 == "106")
+con1_out_w2 <- filter(con1_out, con1_out$X1 == "107")
+con2_out_w2 <- filter(con2_out, con2_out$X1 == "107")
 
-data_con1 <- filter(data_out, data_out$Version == "stream.")
-data_con2 <- filter(data_out, data_out$Version == "building.")
-data_con1_w2 <- filter(data_con1, data_con1$X1 == "107")
-data_con2_w2 <- filter(data_con2, data_con2$X1 == "107")
-
-round(pastecs::stat.desc(cbind(data_con1$Reaction_time, data_con2$Reaction_time, data_con1_w2$Reaction_time, data_con2_w2$Reaction_time), basic = F, norm = TRUE), digits = 2)
+round(pastecs::stat.desc(cbind(con1_out_w1$Reaction_time, con2_out_w1$Reaction_time, con1_out_w2$Reaction_time, con2_out_w2$Reaction_time), basic = F, norm = TRUE), digits = 2)
 
 
 ```
 
+The values of skew.2SE for all four data sets are between 0-1 and the values of kurt.2SE are all between -1 and 1 which is supporting a normal distribution. 
+The Shapiro Wilk's test has values around 0,95 for all of the data sets with a not significant value of p (p>0,05), which means that the distributions of the four data sets could be normally distributed.
 
-```{r delete}
+I will therefore continue with a parametric t.test. 
 
-#stat.desc on four different things?? version and word 106 or 107
+```{r t-test parametric}
+#First I will make two data sets so I can compare the two different conditions to firstly the normal/salient word and secondly the following word
 
-#data_con_1 <- filter(data, data$X1 == c(106, 107), data$Version == "stream.")
-#data_con_2 <- filter(data, data$X1 == c(106, 107), data$Version == "building.")
+data_106 <- filter(data_out, data$X1 == 106)
+data_107 <- filter(data_out, data$X1 == 107)
+
+t.test(Reaction_time ~ Version, data = data_106)
+t.test(Reaction_time ~ Version, data = data_107)
 
 ```
+## Comparing the reaction of the two conditions according to the expected and the unexpected word
 
+When conducting an independent t-test I have found that the average reading time for expected and unexpected word is not significantly increased by the unexpected word, t(23.98) = -0.63, p > .05, (mean expected = 0.57, mean unexpected = 0.50)
+
+The same goes for the word following the expected and unexpected word, t(22.62) = 1.01, p > .05, (mean expected = 0.48, mean unexpected = 0.56).
+
+
+### DELETE FROM HERE???
 
 ```{r t-test non-parametric}
 
@@ -204,22 +254,8 @@ plot5 + geom_bar()
 ```
 
 
-NOTES
-Non-parametric test (not normally distributed) Kendalls Tau and Spearman's Rho
-Covariance
-#Fabio
-Word frequency - mrc database
-
-t.test
-two seperate tests for each of the conditions (building and stream vs the following word from the two conditions). number something for "they"
-keep it minimalistic
-
-LÆS OM FORSKEL på kendall og spearman (ordinal variables? - see class 5 lecture slides)
 
 #QUESTIONS FOR TELMA
 
-- should I do stat.desc on my transformed data or the original data?? BOTH
 - Is it a good idea to do the t-test for non-parametric data and then transform the data and do a normal t-test to see the difference?  yes
-- does it make a difference that we have unequal sample sizes? (13 vs 15)  note in discussion 
-- Twitter setup!!
-# second part assumption checking with two words for each condition
+- should I continue with the subsets of the two conditions throughout the entire part 1? (word length, frequency and number)
