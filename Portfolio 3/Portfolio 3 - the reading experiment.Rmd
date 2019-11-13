@@ -18,7 +18,7 @@ files <- list.files(path = "logfiles",
                     full.names = T) 
 data <- lapply(files, read_csv) %>% plyr::rbind.fill()
 
-#fixing gender with both upper and lower case due to differences in the code in the group
+#fixing gender with both upper and lower case due to a prior error in the code 
 data$Gender <- tolower(data$Gender)
 
 ```
@@ -63,10 +63,10 @@ round(pastecs::stat.desc(cbind(con1$Reaction_time, con2$Reaction_time), basic = 
 The histograms and the QQ-plots do not look normally distributed. The values of skew.2SE and kurt.2SE for condition 1 are too high for a normal distribution (in this case 35.60 and 178.22 respectively). The same applies for condition 2 but with the values 78.10 (skew.2SE) and 614.23 (kurt.2SE). 
 Because both distributions have a positive value of kurt.2SE they are leptokurtic, which is not normal.
 
-The value Shapiro Wilk's test for condition 1 is 0.77 with a significant p-value (p<0,05), which means that the data is significantly different from a normal distribution. The same applies for condition 2 except the value of the test is 0.56.
+The value Shapiro Wilk's test for condition 1 is 0.77 with a significant p-value (p<0,05), which means that the data are significantly different from a normal distribution. The same applies for condition 2 except the value of the test is 0.56.
 
 The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
-I will now try to transform the data by removing outliers and logging reaction time. 
+I will now try to transform the data by removing outliers and logging the reaction time. 
 
 ### Transforming the data
 ```{r transforming the data - removing outliers and logging the data}
@@ -89,7 +89,7 @@ con2_out_log <- con2_out %>% mutate(rt_log = log(con2_out$Reaction_time),
                                     rt_sqrt = sqrt(con2_out$Reaction_time), 
                                     rt_inv = 1/con2_out$Reaction_time)
 
-#checking numeric values for both conditions again
+#checking numeric values for both conditions with the logged data
 round(pastecs::stat.desc(cbind(con1_out_log$rt_log, con1_out_log$rt_sqrt, con1_out_log$rt_inv, con2_out_log$rt_log, con2_out_log$rt_sqrt, con2_out_log$rt_inv), basic = F, norm = TRUE), digits = 2)
 
 ```
@@ -121,7 +121,7 @@ cor.test(data_out$word_len, data_out$Reaction_time, method = "kendall")
 
 #visualize 
 scat_len <- ggplot(data_out, aes(word_len,Reaction_time))
-scat_len + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word length and reaction time")
+scat_len + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word length and reaction time") + labs(x = "Word length (number of letters)", y = "Reaction time (seconds)")
 
 ```
 
@@ -141,7 +141,7 @@ cor.test(df_merge$kf_freq, df_merge$Reaction_time, method = "kendall")
 
 #visualize 
 scat_freq <- ggplot(df_merge, aes(kf_freq, Reaction_time))
-scat_freq + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word frequency and reaction time")
+scat_freq + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word frequency and reaction time")+ labs(x = "Word frequency (MRC database)", y = "Reaction time (seconds)")
 
 ```
 
@@ -155,18 +155,18 @@ cor.test(data_out$X1, data_out$Reaction_time, method = "kendall")
 
 #visualize 
 scat_num <- ggplot(data_out, aes(X1,Reaction_time))
-scat_num + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word number and reaction time")
+scat_num + geom_point() + geom_smooth(method = lm, colour = "red") + ggtitle("Correlation between word number and reaction time") + labs(x = "Word number in text (ordinal)", y = "Reaction time (seconds)")
 
 ```
 
 
 The value of Tau is -0.1 rounded up with a significant p-value (p<0.01). This means that there is a small negative correlation between the reaction time and the order of the words in the story. 
 
-In conclusion all three word properties are significant, but is only the word number i.e. the order of words in the story that has a small effect size, where the two others are too small to actually conclude there is a meaningful correlation. 
+In conclusion all three word properties actually have a significant correlation with reaction time, but it is only the word number i.e. the order of words in the story that has a small effect size, where the two others each have an effect size that is too small to conclude there is a meaningful correlation. 
 
 # Part 2 - How do semantic-contextual expectations affect reading times?
 
-First I will check the assumptions again because we now have four groups of data; the two versions and within those the expected or the unexpected word(i.e. word number 106) and the word following that (word number 107).
+First I will check the assumptions again because we now have four groups of data; the two versions and within those the expected or the unexpected word (i.e. word number 106) and the word following that (word number 107).
 
 ### Checking assumptions again
 ```{r checking assumptions again}
@@ -181,7 +181,7 @@ round(pastecs::stat.desc(cbind(con1_out_w1$Reaction_time, con2_out_w1$Reaction_t
 
 ```
 
-The values of skew.2SE and kurt.2SE for all four data sets are all between [-1;1] which is supporting a normal distribution. 
+The values of skew.2SE and kurt.2SE for all four data sets are all between [-1;1] which supports a normal distribution. 
 The Shapiro Wilk's test has values around 0,95 for all of the data sets with a not significant value of p (p>0.05), which means that the distributions of the four data sets could be normally distributed.
 
 I have checked the qq-plots for all four data sets. They almost look normally distributed, so I will continue with a t-test that assumes the data are parametric (even though I do not have a lot of data points).
@@ -199,7 +199,7 @@ data_107 <- filter(data_out, data_out$X1 == 107)
 t.test(Reaction_time ~ Version, data = data_106)
 t.test(Reaction_time ~ Version, data = data_107)
 
-#calculating the four standard deviations
+#calculating the standard deviation for each of the data sets
 sd(con1_out_w1$Reaction_time)
 sd(con1_out_w2$Reaction_time)
 sd(con2_out_w1$Reaction_time)
@@ -207,7 +207,7 @@ sd(con2_out_w2$Reaction_time)
 
 ```
 
-## Comparing the reaction of the two conditions according to the expected and the unexpected word
+## Comparing the reaction time of the two conditions according to the expected and the unexpected word
 
 When conducting an independent t-test I have found that the average reading time for the expected and unexpected word is not significantly increased by the unexpected word, t(23.98) = -0.63, p>0.05, (mean expected = 0.57, mean unexpected = 0.50, SD expected = 0.33, SD unexpected = 0.23)
 
@@ -219,9 +219,11 @@ I can therefore conclude that there is no difference in reaction time between th
 ```{r visualizing the t-tests}
 
 boxplot_106 <- ggplot(data_106, aes(Version, Reaction_time, colour = Version))
-boxplot_106 + geom_boxplot(width = 0.5) + stat_summary(fun.y = mean, geom = "point") + labs(y = "Reaction time") + coord_cartesian(xlim = NULL, ylim = c(1.5,0)) + ggtitle("The salient/not salient word")
+boxplot_106 + geom_boxplot(width = 0.5) + stat_summary(fun.y = mean, geom = "point") + labs(y = "Reaction time") + coord_cartesian(xlim = NULL, ylim = c(1.5,0)) + ggtitle("The salient/not salient word") 
 
 boxplot_107 <- ggplot(data_107, aes(Version, Reaction_time, colour = Version))
 boxplot_107 + geom_boxplot(width = 0.5) + stat_summary(fun.y = mean, geom = "point") + labs(y = "Reaction time") + coord_cartesian(xlim = NULL, ylim = c(1.5,0)) + ggtitle("The word following the salient/not salient word")
 
 ```
+
+Here it should be noted that the word "stream" represents condition 1 (the expected word) and the word "building" represents condition 2 (the unexpected word). 
