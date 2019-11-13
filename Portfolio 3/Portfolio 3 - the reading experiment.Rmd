@@ -23,11 +23,12 @@ data$Gender <- tolower(data$Gender)
 
 ```
 
-#Part 1 - Which properties of words correlate with word-by-word reading times?
+# Part 1 - Which properties of words correlate with word-by-word reading times?
 
 First I will investigate whether the data are normally distributed or not. If they are normally distributed I can calculate the correlation with parametric tests, and if not I will use non-parametric tests, i.e. Spearman's Rho or Kendall's Tau. 
 I will subset the data into the two different conditions because the data set represents two different groups.  
 
+### Checking assumptions
 ```{r checking assumptions}
 
 #subsetting the data into the two conditions
@@ -67,7 +68,7 @@ The value Shapiro Wilk's test for condition 1 is 0,95 with a significant p-value
 The visual and the numeric outcome strongly indicates that the data are not normally distributed. 
 I will now try to transform the data by removing outliers and logging reaction time. 
 
-
+### Transforming the data
 ```{r transforming the data - removing outliers and logging the data}
 #finding z-scores
 data$z <- (data$Reaction_time - mean(data$Reaction_time))/sd(data$Reaction_time)
@@ -121,7 +122,7 @@ I will remove the outliers though, because they can cause unsystematic variance.
 I will use Kendalls' Tau to test for correlation because our data set is fairly small (<30 logfiles).
 
 ## Correlation between reaction time and word length
-```{r word length and correlation - devide the data into subset with the different conditions?????}
+```{r word length and correlation - devide the data into subset with the different condition}
 
 #removing punctuation
 data_out <- mutate(data_out, Stimulus = str_replace_all(data_out$Stimulus, "[:punct:]", ""))
@@ -142,7 +143,7 @@ A Kendall's Tau value of 1 indicates a perfect positive correlation, where a val
 The value of Kendall's Tau is 0,05 with a significant p-value<0,05. 
 Even though the results are significant the effect size is so small that the correlation is not very strong at all. 
 
-##Correlation between reaction time and word frequency
+## Correlation between reaction time and word frequency
 ```{r word frequency}
 
 data_out$word <- toupper(data_out$Stimulus)
@@ -177,12 +178,13 @@ This makes sense because I observed many participants going slowly in the beginn
 In conclusion all three word properties are significant, but is only the word number i.e. the order of words in the story that has a small effect size, where the two others are too small to actually conclude there is a meaningful correlation. 
 
 
-#Part 2 - How do semantic-contextual expectations affect reading times?
+# Part 2 - How do semantic-contextual expectations affect reading times?
 
 To the fun part. 
 
 First I will check the assumptions again because we now have four groups of data; the two versions and within the two version the semantically contextual word or the salient word (i.e. word number 106) and the word following that (word number 107).
 
+### Checking assumptions again
 ```{r checking assumptions again}
 
 con1_out_w1 <- filter(con1_out, con1_out$X1 == "106")
@@ -200,6 +202,7 @@ The Shapiro Wilk's test has values around 0,95 for all of the data sets with a n
 
 I will therefore continue with a parametric t.test. 
 
+## T-test
 ```{r t-test parametric}
 #First I will make two data sets so I can compare the two different conditions to firstly the normal/salient word and secondly the following word
 
@@ -221,11 +224,11 @@ The same goes for the word following the expected and unexpected word, t(22.62) 
 
 ```{r t-test non-parametric}
 
-data_106 <- filter(data_out, data$X1 == 106)
-data_107 <- filter(data_out, data$X1 == 107)
+#data_106 <- filter(data_out, data$X1 == 106)
+#data_107 <- filter(data_out, data$X1 == 107)
 
-WRS2::yuen(Reaction_time ~ Version, data = data_106)
-WRS2::yuen(Reaction_time ~ Version, data = data_107)
+#WRS2::yuen(Reaction_time ~ Version, data = data_106)
+#WRS2::yuen(Reaction_time ~ Version, data = data_107)
 
 ```
 
@@ -233,21 +236,21 @@ WRS2::yuen(Reaction_time ~ Version, data = data_107)
 ```{r t-test Welch}
 
 
-data_106_log <- data_106 %>% mutate(log(data_106$Reaction_time))
-data_107_log <- data_107 %>% mutate(log(data_107$Reaction_time))
+#data_106_log <- data_106 %>% mutate(log(data_106$Reaction_time))
+#data_107_log <- data_107 %>% mutate(log(data_107$Reaction_time))
 
 
 
-t.test(Reaction_time ~ Version, data = data_106_log)
+#t.test(Reaction_time ~ Version, data = data_106_log)
 
-t.test(Reaction_time ~ Version, data = data_107_log)
+#t.test(Reaction_time ~ Version, data = data_107_log)
 
 ```
 
 ```{r visualizing reaction time}
 
-plot5 <- ggplot(data_log, aes(Version, Reaction_time), fill = version)
-plot5 + geom_bar() 
+#plot5 <- ggplot(data_log, aes(Version, Reaction_time), fill = version)
+#plot5 + geom_bar() 
 
 #qqplot???
 
