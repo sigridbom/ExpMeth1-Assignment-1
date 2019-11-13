@@ -2,10 +2,6 @@
 title: "Portfolio 3 - The Reading Experiment"
 author: "Sigrid"
 date: "11/7/2019"
----
-title: "Portfolio 3"
-author: "Sigrid Agersnap Bom Nielsen"
-date: "11/7/2019"
 output: html_document
 ---
 
@@ -199,16 +195,23 @@ I have checked the qq-plots for all four data sets. They almost look normally di
 data_106 <- filter(data_out, data_out$X1 == 106)
 data_107 <- filter(data_out, data_out$X1 == 107)
 
+#t-test
 t.test(Reaction_time ~ Version, data = data_106)
 t.test(Reaction_time ~ Version, data = data_107)
+
+#calculating the four standard deviations
+sd(con1_out_w1$Reaction_time)
+sd(con1_out_w2$Reaction_time)
+sd(con2_out_w1$Reaction_time)
+sd(con2_out_w2$Reaction_time)
 
 ```
 
 ## Comparing the reaction of the two conditions according to the expected and the unexpected word
 
-When conducting an independent t-test I have found that the average reading time for the expected and unexpected word is not significantly increased by the unexpected word, t(23.98) = -0.63, p>0.05, (mean expected = 0.57, mean unexpected = 0.50)
+When conducting an independent t-test I have found that the average reading time for the expected and unexpected word is not significantly increased by the unexpected word, t(23.98) = -0.63, p>0.05, (mean expected = 0.57, mean unexpected = 0.50, SD expected = 0.33, SD unexpected = 0.23)
 
-The same goes for the word following the expected and unexpected word, t(22.62) = 1.01, p>0.05, (mean expected = 0.48, mean unexpected = 0.56).
+The same goes for the word following the expected and unexpected word, t(22.62) = 1.01, p>0.05, (mean expected = 0.48, mean unexpected = 0.56, SD expected = 0.21 and SD unexpected = 0.23).
 
 I can therefore conclude that there is no difference in reaction time between the two versions of the text. 
 
