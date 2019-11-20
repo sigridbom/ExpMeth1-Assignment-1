@@ -1,0 +1,55 @@
+---
+title: "Portfolio 4"
+author: "Sigrid"
+date: "11/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(tidyverse, pastecs, MuMIn, car, multcomp, WRS2)
+
+```
+
+```{r import data}
+
+suicide <- read_csv("WHO_suicide_statistics.csv")
+
+```
+
+# 1 analysis 
+
+```{r}
+
+model <- lm(suicides_no ~ age, suicide)
+plot(model)
+
+str(suicide)
+
+df_age <- suicide %>% group_by(suicide$age)
+
+table(suicide$age)
+
+bartlett.test(suicides_no ~ age, suicide)
+leveneTest(suicides_no ~ age, suicide)
+
+by(suicide$suicides_no, suicide$age, mean)
+
+anova_res <- aov(suicides_no ~ age, suicide)
+summary(anova_res)
+
+class(suicide$age)
+suicide$age <- as.factor(suicide$age)
+
+summary(glht(aov(suicides_no ~ age, suicide), linfct = mcp(age = "Tukey")))
+
+```
+```{r geoms}
+
+plot1 <- ggplot(suicide, aes(suicide$age, suicide$suicides_no))
+plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides") + theme_minimal()+ ggtitle("Number of suicides according to age from 1979-2016")
+
+
+```
+
