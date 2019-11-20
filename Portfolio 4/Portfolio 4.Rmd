@@ -18,7 +18,7 @@ suicide <- read_csv("WHO_suicide_statistics.csv")
 
 ```
 
-# 1 analysis 
+# 1st analysis 
 
 ```{r}
 
@@ -49,6 +49,29 @@ summary(glht(aov(suicides_no ~ age, suicide), linfct = mcp(age = "Tukey")))
 
 plot1 <- ggplot(suicide, aes(suicide$age, suicide$suicides_no))
 plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides") + theme_minimal()+ ggtitle("Number of suicides according to age from 1979-2016")
+
+
+```
+
+
+# 2nd analysis
+
+```{r}
+
+model2 <- lm(suicides_no ~ year, suicide)
+
+plot(model2)
+
+summary(model2)
+
+scat1 <- ggplot(suicide_country, aes(year, suicides_no))
+scat1 + geom_point() + geom_smooth(method = "lm")
+
+geom1 <- ggplot(suicide_country, aes(year, suicides_no, fill = country)) 
+geom1 + geom_line() #geom_smooth(method = "lm")
+
+suicide_country <- suicide %>% group_by(suicide$country)
+
 
 
 ```
