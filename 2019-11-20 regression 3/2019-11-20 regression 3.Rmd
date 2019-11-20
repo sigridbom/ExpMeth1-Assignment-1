@@ -1,0 +1,90 @@
+---
+title: "2019-11-20 regression 3"
+author: "Sigrid"
+date: "11/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+pacman::p_load(tidyverse, pastecs, lme4)
+
+```
+
+## Winter (2014) Tutorial 2
+
+```{r importing data}
+
+politeness <- read_csv("politeness_data.csv")
+
+```
+
+
+Following the tutorial doing regression. 
+
+```{r}
+
+head(politeness)
+tail(politeness)
+summary(politeness)
+str(politeness)
+colnames(politeness)
+
+which(is.na(politeness$frequency))
+
+```
+
+```{r boxplot}
+boxplot(frequency ~ attitude*gender, col=c("white", "lightgray"), politeness)
+
+```
+
+```{r model}
+
+politeness.model <-  lmer(frequency ~ attitude + gender + (1|subject) + (1|scenario), politeness)
+summary(politeness.model)
+```
+
+```{r significance}
+
+politeness.null <- lmer(frequency ~ gender + (1|subject) + (1|scenario), politeness, REML = F)
+
+politeness.model <-  lmer(frequency ~ attitude + gender + (1|subject) + (1|scenario), politeness, REML = F)
+
+anova(politeness.null, politeness.model)
+
+```
+
+Politeness affected pitch (chi i anden (1) = 11.62, p = 0.00065), lowering it by about 19.7 Hz +- 5.6 (standard errors)
+
+hiker analogy: you can only drop one piece of luggage at the time to know what made a difference. 
+
+### interaction
+full model = frequency ~ attitude*gender
+reduced model = frequency ~ attitude + gender
+theory = if attitude is different for men and women (for attitude to have an affect on pitch (frequency) it is somehow modulated through gender)
+interactions are specified with "*" 
+
+# Random slopes versus random intercepts
+
+Random intercept model = accounts for baseline-differences in frequency (ptich)
+might not be a valid assumption, we need a model that can make different slopes for the different subjects. 
+```{r random intercept model}
+
+coef(politeness.model)
+
+```
+
+```{r random slopes}
+politeness.model <- lmer(frequency ~attitude + gender + (1+ attitude|subject) + (1 + attitude | scenario), politeness, REML = F)
+
+coef(politeness.model)
+
+politeness.null <- lmer(frequency ~ gender + (1 + attitude|subject) + (1+attitude|scenario), politeness, REML = F)
+
+anova(politeness.null, politeness.model)
+
+```
+
+
