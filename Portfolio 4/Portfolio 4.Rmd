@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-pacman::p_load(tidyverse, pastecs, MuMIn, car, multcomp, WRS2)
+pacman::p_load(tidyverse, pastecs, MuMIn, car, multcomp, WRS2, lme4, reshape2)
 
 ```
 
@@ -61,18 +61,92 @@ plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides
 model2 <- lm(suicides_no ~ year, suicide)
 
 plot(model2)
+bartlett.test(suicides_no ~ year, suicide)
+
 
 summary(model2)
 
+```
+
+
+
+```{r}
+
+suicide_country <- group_by(suicide, suicide$country)
+
+
 scat1 <- ggplot(suicide_country, aes(year, suicides_no))
-scat1 + geom_point() + geom_smooth(method = "lm")
+scat1 + geom_point() + geom_smooth(method = "lm") + xlab("Year") + ylab("Number of suicides per country") + ggtitle("Number of suicides per country from 1979 to 2016")
 
 geom1 <- ggplot(suicide_country, aes(year, suicides_no, fill = country)) 
-geom1 + geom_line() #geom_smooth(method = "lm")
+geom1 + geom_smooth() #geom_line(suicide_country$country == "Albania") #geom_smooth(method = "lm")
 
-suicide_country <- suicide %>% group_by(suicide$country)
+hist(suicide$year)
+
+```
+
+# 3rd analysis
+
+```{r}
+
+qplot(x=Var1, y=Var2, 
+      data=melt(cor(suicide, use="p")), 
+      fill=value, 
+      geom="tile") +
+   scale_fill_gradient2(limits=c(-1, 1))
 
 
+
+##### Highlight only the 'worrying' correlation values
+#plot only values above .7
+plot_df <- melt(cor(suicide))
+plot_df$value[plot_df$value < 0.7 & plot_df$value > - 0.7] = 0
+qplot(x=Var1, y=Var2, data=plot_df, fill=value, geom="tile") +
+   scale_fill_gradient2(limits=c(-1, 1))
+```
+
+
+```{r}
+
+m0 <- lm(suicides_no ~ 1, suicide)
+
+model4 <- lm(suicides_no ~ age + sex + country + year, suicide, population)
+summary(model4)
+
+model5 <- lm(suicides_no ~ age + sex + country, suicide)
+
+model6 <- lm(suicides_no ~ age + sex, suicide)
+
+summary(model0)$adj.r.squared
+summary(model4)$adj.r.squared
+summary(model5)$adj.r.squared
+summary(model6)$adj.r.squared
+
+
+anova(model0, model4, model5, model6)
+
+AIC(model3, model4, model5, model6)
+BIC(model3, model4, model5, model6)
+
+
+m1 <- lm(suicides_no ~ sex + age + country + year, suicide)
+summary(m1)
+
+m2 <- lm(suicides_no ~ country + sex + age + year, suicide)
+summary(m2)
+
+
+
+model4 <- lmer(suicides_no ~ country, suicide)
+
+
+
+model.null <- lmer(suicides_no ~ age + (1|country) + (1|sex), suicide, REML = F)
+
+model.model <-  lmer(suicides_no ~ age + sex + country + (1|year), suicide, REML = F)
+summary(model.model)
+
+anova(model.null, model.model)
 
 ```
 
