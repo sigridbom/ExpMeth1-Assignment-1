@@ -36,19 +36,23 @@ leveneTest(suicides_no ~ age, suicide)
 
 by(suicide$suicides_no, suicide$age, mean)
 
-anova_res <- aov(suicides_no ~ age, suicide)
+anova_res <- aov(suicide_prop ~ age, suicide)
 summary(anova_res)
 
 class(suicide$age)
 suicide$age <- as.factor(suicide$age)
 
-summary(glht(aov(suicides_no ~ age, suicide), linfct = mcp(age = "Tukey")))
+summary(glht(aov(suicide_prop ~ age, suicide), linfct = mcp(age = "Tukey")))
+
+suicide$suicide_prop <- ((suicide$suicides_no/suicide$population)*100000)
+
+plot(lm(suicide_prop ~ age, suicide))
 
 ```
 ```{r geoms}
 
-plot1 <- ggplot(suicide, aes(suicide$age, suicide$suicides_no))
-plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides") + theme_minimal()+ ggtitle("Number of suicides according to age from 1979-2016")
+plot1 <- ggplot(suicide, aes(suicide$age, suicide$suicide_prop))
+plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides per 100.000 inhabitants") + theme_minimal()+ ggtitle("Number of suicides according to age from 1979-2016") 
 
 
 ```
@@ -58,13 +62,15 @@ plot1 + geom_boxplot(aes(color = age)) + xlab ("Age") + ylab("Number of suicides
 
 ```{r}
 
-model2 <- lm(suicides_no ~ year, suicide)
+model2 <- lm(suicide_prop ~ year, suicide)
 
 plot(model2)
-bartlett.test(suicides_no ~ year, suicide)
+bartlett.test(suicide_prop ~ year, suicide)
 
 
 summary(model2)
+
+summary(glht(aov(suicide_prop ~ suicide$year, suicide), linfct = mcp(suicide$year = "Tukey")))
 
 ```
 
@@ -89,41 +95,33 @@ hist(suicide$year)
 
 ```{r}
 
-qplot(x=Var1, y=Var2, 
-      data=melt(cor(suicide, use="p")), 
-      fill=value, 
-      geom="tile") +
-   scale_fill_gradient2(limits=c(-1, 1))
+model3 <- lm(suicide_prop ~ age + year + country + sex, data = suicide)
+plot(model3)
+summary(model3)
 
+bartlett.test(suicide_prop ~ age + year + country + sex, suicide)
 
-
-##### Highlight only the 'worrying' correlation values
-#plot only values above .7
-plot_df <- melt(cor(suicide))
-plot_df$value[plot_df$value < 0.7 & plot_df$value > - 0.7] = 0
-qplot(x=Var1, y=Var2, data=plot_df, fill=value, geom="tile") +
-   scale_fill_gradient2(limits=c(-1, 1))
 ```
 
 
 ```{r}
 
-m0 <- lm(suicides_no ~ 1, suicide)
+m0 <- lm(suicide_prop ~ 1, suicide)
+m1 <- lm(suicide_prop ~ age + sex + country + year, suicide)
+m2 <- lm(suicide_prop ~ age + sex + country, suicide)
+m3 <- lm(suicide_prop ~ age + sex, suicide)
+m4 <- lm(suicide_prop ~ age, suicide)
 
-model4 <- lm(suicides_no ~ age + sex + country + year, suicide, population)
-summary(model4)
+summary(m1)
 
-model5 <- lm(suicides_no ~ age + sex + country, suicide)
-
-model6 <- lm(suicides_no ~ age + sex, suicide)
-
-summary(model0)$adj.r.squared
-summary(model4)$adj.r.squared
-summary(model5)$adj.r.squared
-summary(model6)$adj.r.squared
+summary(m0)$adj.r.squared
+summary(m1)$adj.r.squared
+summary(m2)$adj.r.squared
+summary(m3)$adj.r.squared
+summary(m4)$adj.r.squared
 
 
-anova(model0, model4, model5, model6)
+anova(m0, m1, m2, m3, m4)
 
 AIC(model3, model4, model5, model6)
 BIC(model3, model4, model5, model6)
@@ -134,19 +132,6 @@ summary(m1)
 
 m2 <- lm(suicides_no ~ country + sex + age + year, suicide)
 summary(m2)
-
-
-
-model4 <- lmer(suicides_no ~ country, suicide)
-
-
-
-model.null <- lmer(suicides_no ~ age + (1|country) + (1|sex), suicide, REML = F)
-
-model.model <-  lmer(suicides_no ~ age + sex + country + (1|year), suicide, REML = F)
-summary(model.model)
-
-anova(model.null, model.model)
 
 ```
 
