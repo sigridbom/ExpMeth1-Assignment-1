@@ -1,0 +1,113 @@
+---
+title: "Portfolio 5"
+author: "Sigrid"
+date: "12/2/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+pacman::p_load(tidyverse, lme4, lmerTest, MuMIn, pastecs, car, multcomp, WRS2, reshape2)
+
+cake <- read_csv("cake.csv")
+
+```
+
+
+
+```{r cake predictors}
+
+m1 <- lmer(angle ~ temp + recipe + (1+replicate|recipe), cake, REML = F)
+m2 <- lmer(angle ~ recipe + (1+replicate|recipe), cake, REML = F)
+m3 <- lmer(angle ~ temp + (1+replicate|recipe), cake, REML = F)
+
+AIC(m1, m2, m3)
+
+```
+
+```{r}
+coef(m3)
+```
+
+
+```{r}
+plot(m3)
+
+summary(m3)
+
+
+```
+
+class 9 notes:  “We used R (R Core Team, 2019) and lmerTest (Kuznetsova, Brockhoff and Christensen, 2017) to perform a linear mixed effects analysis of the relationship between sleep deprivation and reaction time. As fixed effects, we entered the number of days subjects have been lacking sleep into the model. As random effects, we had intercepts for subjects, as well as by-subject random slopes for the effect of the number of days. The model was built using the following syntax:
+ 
+ Reaction ~ Days + (1 + Days | Subject) 
+ 
+ Both fixed and random effects accounted for roughly 80% of variance in the reaction time variable. Visual inspection of residual plots did not reveal any obvious deviations from homoscedasticity or normality. Reaction time has been found to significantly be modulated by number of days of sleep deprivation, β = 10.467, SE = 1.502, t = 6.968, p < .001” 
+ 
+# Analysis 2
+
+
+```{r}
+
+titanic <- read_csv("titanic.csv")
+
+```
+
+
+```{r}
+
+class(titanic$Survived)
+
+str(titanic)
+
+titanic$Survived <- as.factor(titanic$Survived)
+levels(titanic$Survived)
+titanic$Pclass <- as.factor(titanic$Pclass)
+titanic$Sex <- as.factor(titanic$Sex)
+
+t1 <- glm(Survived ~ Age + Sex + Pclass, titanic, family = binomial)
+
+summary(t1)
+
+
+women <- (boot::inv.logit(3.63492) + boot::inv.logit(3.63492-1.19911) + boot::inv.logit(3.63492-2.45544))/3  #woman in general
+
+
+men <- (boot::inv.logit(3.63492-2.58872) + boot::inv.logit(3.63492-2.58872-1.19911) + boot::inv.logit(3.63492-2.58872-2.45544))/3 # men in geneal
+
+
+FirstClass <- (boot::inv.logit(3.63492)+boot::inv.logit(3.63492-2.58872))/2 # 1st class
+
+
+SecondClass <- (boot::inv.logit(3.63492-1.19911)+boot::inv.logit(3.63492-2.58872-1.19911))/2 #2nd class
+  
+  
+ThirdClass <- (boot::inv.logit(3.63492-2.45544)+boot::inv.logit(3.63492-2.58872-2.45544))/2 #3rd class
+
+gen <- group_by(titanic, Sex)
+summarise(gen, median(Age))
+
+female = 27
+male = 28
+
+
+MedianAgeWomen <- (boot::inv.logit(3.63492 + (27*-0.03427)) + boot::inv.logit(3.63492-1.19911+(27*-0.03427)) + boot::inv.logit(3.63492-2.45544)+(27*-0.03427))/3 #median women
+
+MedianAgeMen <- (boot::inv.logit(3.63492-2.58872+(28*-0.03427)) + boot::inv.logit(3.63492-2.58872-1.19911+(28*-0.03427)) + boot::inv.logit(3.63492-2.58872-2.45544+(28*-0.03427)))/3 #median men
+
+probability <- c(men, women, FirstClass, SecondClass, ThirdClass, MedianAgeWomen, MedianAgeMen)
+categories <- c("Men", "Women", "First class", "Second class", "Third class", "Median age of women", "Median age of men")
+
+df <- data.frame(probability, categories)
+
+df$categories <- factor(df$categories, levels = df$categories[order(df$probability)])
+
+
+plot1 <- ggplot(df, aes(categories, probability, fill = categories)) 
+plot1 + geom_bar(stat="summary", fun.y = mean) + xlab("Predictors") + ylab("Probability") + ggtitle("Probability of survival according to gender, class and age") + theme_minimal() + scale_fill_grey(start = 0.7, end = 0.3) #+ labs(ledge = "Categories")
+
+```
+
