@@ -16,13 +16,13 @@ cake <- read_csv("cake.csv")
 
 ```
 
-
+# Analysis 1
 
 ```{r cake predictors}
 
-m1 <- lmer(angle ~ temp + recipe + (1+replicate|recipe), cake, REML = F)
-m2 <- lmer(angle ~ recipe + (1+replicate|recipe), cake, REML = F)
-m3 <- lmer(angle ~ temp + (1+replicate|recipe), cake, REML = F)
+m1 <- lmer(angle ~ temp + recipe + (1+recipe|replicate), cake, REML = F)
+m2 <- lmer(angle ~ recipe + (1+recipe|replicate), cake, REML = F)
+m3 <- lmer(angle ~ temp + (1+recipe|replicate), cake, REML = F)
 
 AIC(m1, m2, m3)
 
@@ -38,7 +38,13 @@ plot(m3)
 
 summary(m3)
 
+MuMIn::r.squaredGLMM(m3)
 
+plot(m1)
+
+summary(m1)
+
+MuMIn::r.squaredGLMM(m1)
 ```
 
 class 9 notes:  “We used R (R Core Team, 2019) and lmerTest (Kuznetsova, Brockhoff and Christensen, 2017) to perform a linear mixed effects analysis of the relationship between sleep deprivation and reaction time. As fixed effects, we entered the number of days subjects have been lacking sleep into the model. As random effects, we had intercepts for subjects, as well as by-subject random slopes for the effect of the number of days. The model was built using the following syntax:
@@ -57,7 +63,7 @@ titanic <- read_csv("titanic.csv")
 ```
 
 
-```{r}
+```{r kaziks version}
 
 class(titanic$Survived)
 
@@ -69,6 +75,13 @@ titanic$Pclass <- as.factor(titanic$Pclass)
 titanic$Sex <- as.factor(titanic$Sex)
 
 t1 <- glm(Survived ~ Age + Sex + Pclass, titanic, family = binomial)
+
+t2 <- glm(Survived ~ Sex, titanic, family = binomial)
+
+t3 <- glm(Survived ~ Pclass, titanic, family = binomial)
+
+t4 <- glm(Survived ~ Sex + Age, titanic, family = binomial)
+
 
 summary(t1)
 
@@ -107,7 +120,45 @@ df$categories <- factor(df$categories, levels = df$categories[order(df$probabili
 
 
 plot1 <- ggplot(df, aes(categories, probability, fill = categories)) 
-plot1 + geom_bar(stat="summary", fun.y = mean) + xlab("Predictors") + ylab("Probability") + ggtitle("Probability of survival according to gender, class and age") + theme_minimal() + scale_fill_grey(start = 0.7, end = 0.3) #+ labs(ledge = "Categories")
+plot1 + geom_bar(stat="summary", fun.y = mean) + xlab("Predictors") + ylab("Probability") + ggtitle("Probability of survival according to gender, class and median age") + theme_minimal() + scale_fill_grey(start = 0.7, end = 0.3) 
+
+```
+
+
+```{r freyjas version}
+
+tita1<-glm(Survived ~ Sex, data=titanic, family= binomial(link=logit))
+tita2<-glm(Survived ~ Age + Sex, data=titanic, family= binomial(link=logit))
+tita3<-glm(Survived ~ Pclass, data=titanic, family= binomial(link=logit))
+summary(tita1)
+summary(tita2)
+summary(tita3)
+
+women<-(boot::inv.logit(1.0566))
+men<-(boot::inv.logit(1.0566+-2.5051))
+class_1<-(boot::inv.logit(0.5306))
+class_2<-(boot::inv.logit(0.5306+-0.6394))
+class_3<-(boot::inv.logit(0.5306+-1.6596))
+maw<-(boot::inv.logit(1.113881+(27*-0.002060)))
+mam<-(boot::inv.logit(1.113881+-2.500001+(28*-0.002060)))
+
+probabilities<-c(women, men, class_1, class_2, class_3, maw, mam)
+predictors<-c("Women", "Men", "Class1", "Class2", "Class3", "MedianAgedWomen", "MedianAgedMen")
+
+df2 <- data.frame(probabilities, predictors)
+
+df2$predictors <- factor(df2$predictors, levels = df2$predictors[order(df2$probabilities)])
+
+
+plot2 <- ggplot(df2, aes(predictors, probabilities, fill = predictors)) 
+plot2 + geom_bar(stat="summary", fun.y = mean) + xlab("Predictors") + ylab("Probability") + ggtitle("Probability of survival according to gender, class and median age") + theme_minimal() + scale_fill_grey(start = 0.7, end = 0.3) 
+
+
+#prob<-data.frame(predictors, probabilities)
+
+#ggplot(prob,aes(x=predictors,y=probabilities, fill=predictors))+geom_bar(stat='summary',fun.y=mean)+xlab("Predictors")+ylab("Probability")+scale_fill_manual(values=c("paleturquoise4","thistle4","honeydew3", "thistle3", "slategray3", "honeydew4", "paleturquoise3"))+scale_y_continuous(labels=scales::percent)
+
+
 
 ```
 
