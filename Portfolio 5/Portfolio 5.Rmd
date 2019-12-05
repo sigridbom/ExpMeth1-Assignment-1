@@ -142,8 +142,16 @@ class_3<-(boot::inv.logit(0.5306+-1.6596))
 maw<-(boot::inv.logit(1.113881+(27*-0.002060)))
 mam<-(boot::inv.logit(1.113881+-2.500001+(28*-0.002060)))
 
+
+medianage <- group_by(titanic, Sex)
+summarise(medianage, median(Age))
+
+female = 27
+male = 28
+
+
 probabilities<-c(women, men, class_1, class_2, class_3, maw, mam)
-predictors<-c("Women", "Men", "Class1", "Class2", "Class3", "MedianAgedWomen", "MedianAgedMen")
+predictors<-c("Women", "Men", "1st class", "2nd class", "3rd class", "MedianAgeWomen", "MedianAgeMen")
 
 df2 <- data.frame(probabilities, predictors)
 
@@ -152,11 +160,6 @@ df2$predictors <- factor(df2$predictors, levels = df2$predictors[order(df2$proba
 
 plot2 <- ggplot(df2, aes(predictors, probabilities, fill = predictors)) 
 plot2 + geom_bar(stat="summary", fun.y = mean) + xlab("Predictors") + ylab("Probability") + ggtitle("Probability of survival according to gender, class and median age") + theme_minimal() + scale_fill_grey(start = 0.7, end = 0.3) 
-
-
-#prob<-data.frame(predictors, probabilities)
-
-#ggplot(prob,aes(x=predictors,y=probabilities, fill=predictors))+geom_bar(stat='summary',fun.y=mean)+xlab("Predictors")+ylab("Probability")+scale_fill_manual(values=c("paleturquoise4","thistle4","honeydew3", "thistle3", "slategray3", "honeydew4", "paleturquoise3"))+scale_y_continuous(labels=scales::percent)
 
 
 
